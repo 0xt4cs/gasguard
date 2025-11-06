@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor Calibration - GasGuard</title>
+    <link rel="icon" type="image/png" href="../assets/images/gasguard.png">
+    <link rel="stylesheet" href="../assets/css/output.css">
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+</head>
+<body class="min-h-screen overflow-x-hidden">
+    <div class="drawer">
+        <input id="main-drawer" type="checkbox" class="drawer-toggle" />
+        
+        <!-- Main Content -->
+        <div class="drawer-content flex flex-col">
+            <!-- Navbar -->
+            <div class="navbar bg-base-100 border-b-2 border-base-300 shadow-sm">
+                <div class="navbar-start">
+                    <label for="main-drawer" class="btn btn-square btn-ghost drawer-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </label>
+                    <div class="flex items-center gap-3 ml-2">
+                        <div class="avatar">
+                            <div class="w-10 rounded">
+                                <img src="../assets/images/gasguard.png" alt="GasGuard Logo" />
+                            </div>
+                        </div>
+                        <div class="hidden sm:block">
+                            <h1 class="text-xl font-bold">GasGuard</h1>
+                            <p class="text-xs text-base-content/70">Sensor Calibration</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="navbar-end gap-2">
+                    <div class="text-sm text-base-content/70 hidden md:block" id="current-time"></div>
+                    
+                    <!-- Login Button (shown when not logged in) -->
+                    <button id="login-btn" class="btn btn-warning btn-sm gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Login</span>
+                    </button>
+                    
+                    <!-- User Dropdown (shown when logged in) -->
+                    <div id="user-dropdown" class="dropdown dropdown-end hidden">
+                        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar flex items-center justify-center p-0">
+                            <div class="w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-base" id="user-avatar">
+                                <span id="user-avatar-letter" class="flex items-center justify-center w-full h-full"></span>
+                            </div>
+                        </div>
+                        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-64 max-w-[calc(100vw-2rem)] p-2 shadow-lg border border-base-300 mt-2 right-0" style="background-color: hsl(var(--b1)) !important;">
+                            <li class="menu-title p-3 border-b border-base-300">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-lg" id="user-dropdown-avatar">
+                                        <span id="user-dropdown-avatar-letter"></span>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="font-semibold text-base-content" id="user-dropdown-username"></span>
+                                        <span class="text-xs text-base-content/70" id="user-dropdown-role"></span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="p-2">
+                                <label for="theme-toggle-dropdown" class="flex items-center justify-between w-full cursor-pointer">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-medium text-base-content">Theme</span>
+                                        <span class="text-xs text-base-content/60" id="theme-status">Light Mode</span>
+                                    </div>
+                                    <div class="swap swap-rotate">
+                                        <input type="checkbox" id="theme-toggle-dropdown" />
+                                        <svg class="swap-on w-5 h-5 fill-current" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <svg class="swap-off w-5 h-5 fill-current" viewBox="0 0 20 20">
+                                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                                        </svg>
+                                    </div>
+                                </label>
+                            </li>
+                            <li>
+                                <button id="logout-btn-dropdown" class="btn btn-error btn-sm w-full gap-2 justify-start">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                    </svg>
+                                    Logout
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+    <!-- Login Modal-->
+    <dialog id="login-modal" class="modal">
+        <div class="modal-box max-w-md p-0 overflow-hidden">
+            <!-- Close Button -->
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle absolute right-4 top-4 z-10 bg-base-100 border-0 hover:bg-error hover:text-error-content shadow-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </form>
+            
+            <!-- Header Section -->
+            <div class="bg-base-100 pt-12 pb-6 text-center">
+                <h3 class="text-2xl font-bold mb-1">Welcome!</h3>
+                <p class="text-base-content/60 text-sm">Sign in for full access</p>
+            </div>
+            
+            <!-- Form Section -->
+            <div class="p-8 pt-4">
+                <form id="login-form" class="space-y-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Username</span>
+                        </label>
+                        <input type="text" id="username" name="username" class="input input-bordered w-full" placeholder="Enter username" required autocomplete="username" />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Password</span>
+                        </label>
+                        <input type="password" id="password" name="password" class="input input-bordered w-full" placeholder="Enter password" required autocomplete="current-password" />
+                    </div>
+
+                    <div id="login-error" class="hidden alert alert-error">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>Invalid credentials. Please try again.</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-full gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        </svg>
+                        Sign In
+                    </button>
+                </form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
+            
+            <main class="flex-1 w-full">
+                <div class="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+                    <div class="text-sm breadcrumbs mb-6">
+                        <ul>
+                            <li><a href="/">Dashboard</a></li>
+                            <li>Sensor Calibration</li>
+                        </ul>
+                    </div>
+
+                <!-- Loading Overlay -->
+                <div id="loading-overlay" class="hidden fixed inset-0 bg-base-300/50 flex items-center justify-center z-50">
+                    <span class="loading loading-spinner loading-lg"></span>
+                </div>
+
+                <h1 class="text-3xl font-bold mb-2">Sensor Calibration</h1>
+                <p class="text-base-content/70 mb-6">Manual and scheduled sensor calibration management</p>
+<!-- 
+                <!-- MQ6 Sensor Card -->
+                <div class="card bg-base-100 shadow-xl mb-6">
+                    <div class="card-body">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h2 class="card-title text-2xl">MQ6 Sensor (LPG/Butane)</h2>
+                                <p class="text-sm text-base-content/70">Detects LPG, Butane, and Propane gas</p>
+                            </div>
+                            <div id="mq6-status-badge" class="badge badge-success badge-lg">Good</div>
+                        </div>
+                        
+                        <div class="divider"></div>
+                        
+                        <!-- Status Stats -->
+                        <div class="stats stats-vertical lg:stats-horizontal shadow w-full mb-4">
+                            <div class="stat">
+                                <div class="stat-title">Last Calibration</div>
+                                <div class="stat-value text-sm" id="mq6-last-cal">—</div>
+                                <div class="stat-desc" id="mq6-cal-type">—</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-title">Drift</div>
+                                <div class="stat-value text-sm" id="mq6-drift">—%</div>
+                                <div class="stat-desc">Current sensor drift</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-title">Degradation</div>
+                                <div class="stat-value text-sm" id="mq6-degradation">—</div>
+                                <div class="stat-desc">Sensor health</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-title">Calibrations</div>
+                                <div class="stat-value text-sm" id="mq6-count">—</div>
+                                <div class="stat-desc">Manual runs</div>
+                            </div>
+                        </div>
+
+                        <!-- Calibration Settings -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Baseline Resistance (kΩ)</span></label>
+                                <input type="number" id="mq6-baseline" step="0.1" class="input input-bordered input-sm" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Sensitivity Factor</span></label>
+                                <input type="number" id="mq6-sensitivity" step="0.1" class="input input-bordered input-sm" />
+                            </div>
+                        </div>
+
+                        <div class="form-control mb-4">
+                            <label class="label cursor-pointer">
+                                <span class="label-text">Enable Scheduled Auto-Calibration</span>
+                                <input type="checkbox" id="mq6-auto" class="toggle toggle-primary" />
+                            </label>
+                            <label class="label">
+                                <span class="label-text-alt">Automatically run calibration routine based on drift thresholds</span>
+                            </label>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="runCalibration('mq6')" class="btn btn-warning btn-sm gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"></path></svg>
+                                Run Calibration
+                            </button>
+                            <button onclick="saveSettings('mq6')" class="btn btn-success btn-sm gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"></path></svg>
+                                Save Settings
+                            </button>
+                            <button onclick="resetCalibration('mq6')" class="btn btn-error btn-sm gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"></path></svg>
+                                Reset to Factory
+                            </button>
+                            <button onclick="viewHistory('mq6')" class="btn btn-ghost btn-sm gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>
+                                View History
+                            </button>
+                        </div>
+
+                        <div id="mq6-success" class="alert alert-success mt-4 hidden">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            <span id="mq6-success-text">Operation successful!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MQ2 Sensor Card -->
+                <div class="card bg-base-100 shadow-xl mb-6">
+                    <div class="card-body">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h2 class="card-title text-2xl">MQ2 Sensor (Multi-Gas/Smoke)</h2>
+                                <p class="text-sm text-base-content/70">Detects Smoke, General Gasses, and CO</p>
+                            </div>
+                            <div id="mq2-status-badge" class="badge badge-success badge-lg">Good</div>
+                        </div>
+                        
+                        <div class="divider"></div>
+                        
+                        <!-- Status Stats -->
+                        <div class="stats stats-vertical lg:stats-horizontal shadow w-full mb-4">
+                            <div class="stat">
+                                <div class="stat-title">Last Calibration</div>
+                                <div class="stat-value text-sm" id="mq2-last-cal">—</div>
+                                <div class="stat-desc" id="mq2-cal-type">—</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-title">Drift</div>
+                                <div class="stat-value text-sm" id="mq2-drift">—%</div>
+                                <div class="stat-desc">Current sensor drift</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-title">Degradation</div>
+                                <div class="stat-value text-sm" id="mq2-degradation">—</div>
+                                <div class="stat-desc">Sensor health</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-title">Calibrations</div>
+                                <div class="stat-value text-sm" id="mq2-count">—</div>
+                                <div class="stat-desc">Manual runs</div>
+                            </div>
+                        </div>
+
+                        <!-- Calibration Settings -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Baseline Resistance (kΩ)</span></label>
+                                <input type="number" id="mq2-baseline" step="0.1" class="input input-bordered input-sm" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Sensitivity Factor</span></label>
+                                <input type="number" id="mq2-sensitivity" step="0.1" class="input input-bordered input-sm" />
+                            </div>
+                        </div>
+
+                        <div class="form-control mb-4">
+                            <label class="label cursor-pointer">
+                                <span class="label-text">Enable Scheduled Auto-Calibration</span>
+                                <input type="checkbox" id="mq2-auto" class="toggle toggle-primary" />
+                            </label>
+                            <label class="label">
+                                <span class="label-text-alt">Automatically run calibration routine based on drift thresholds</span>
+                            </label>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="runCalibration('mq2')" class="btn btn-warning btn-sm gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"></path></svg>
+                                Run Calibration
+                            </button>
+                            <button onclick="saveSettings('mq2')" class="btn btn-success btn-sm gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"></path></svg>
+                                Save Settings
+                            </button>
+                            <button onclick="resetCalibration('mq2')" class="btn btn-error btn-sm gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"></path></svg>
+                                Reset to Factory
+                            </button>
+                            <button onclick="viewHistory('mq2')" class="btn btn-ghost btn-sm gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>
+                                View History
+                            </button>
+                        </div>
+
+                        <div id="mq2-success" class="alert alert-success mt-4 hidden">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            <span id="mq2-success-text">Operation successful!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calibration History Modal -->
+                <dialog id="history-modal" class="modal">
+                    <div class="modal-box max-w-4xl">
+                        <form method="dialog">
+                            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </form>
+                        <h3 class="font-bold text-lg mb-4"><span id="history-sensor-name">MQ6</span> Calibration History</h3>
+                        
+                        <div class="overflow-x-auto w-full max-h-96">
+                            <table class="table table-zebra table-sm w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="whitespace-nowrap">Date & Time</th>
+                                        <th class="whitespace-nowrap">Type</th>
+                                        <th class="whitespace-nowrap">Baseline</th>
+                                        <th class="whitespace-nowrap">Sensitivity</th>
+                                        <th class="whitespace-nowrap">Drift Before</th>
+                                        <th class="whitespace-nowrap">Drift After</th>
+                                        <th class="whitespace-nowrap">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-table-body">
+                                    <!-- Dynamically populated -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="modal-action">
+                            <button onclick="closeHistory()" class="btn">Close</button>
+                        </div>
+                    </div>
+                    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+                </dialog>
+            
+    <!-- Confirmation Modal -->
+    <dialog id="confirm-modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg mb-4">Confirm Action</h3>
+            <p class="mb-4" id="confirm-message">Are you sure you want to proceed?</p>
+            <div class="modal-action">
+                <button onclick="cancelAction()" class="btn">Cancel</button>
+                <button onclick="confirmAction()" class="btn btn-warning" id="confirm-btn">Confirm</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+                </div>
+            </main>
+
+        </div>
+        <!-- End of drawer-content -->
+
+        <!-- Drawer Side -->
+        <div class="drawer-side z-10">
+            <label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+            <aside class="bg-base-200 min-h-screen w-80 p-4">
+                <!-- Sidebar Header -->
+                <div class="flex items-center gap-3 px-4 py-6 border-b border-base-300">
+                    <div class="avatar">
+                        <div class="w-12 rounded-lg">
+                            <img src="../assets/images/gasguard.png" alt="GasGuard Logo" />
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">GasGuard</h2>
+                        <p class="text-xs text-base-content/70">IoT Gas Leak Detection System</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Menu -->
+                <ul class="menu p-0 mt-4 text-base">
+                    <li>
+                        <a href="/" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M1 2.25C1 1.56 1.56 1 2.25 1h3.5C6.44 1 7 1.56 7 2.25v11.5C7 14.44 6.44 15 5.75 15h-3.5C1.56 15 1 14.44 1 13.75V2.25zm1.5.25v11h3v-11h-3zM9 2.25C9 1.56 9.56 1 10.25 1h3.5c.69 0 1.25.56 1.25 1.25v3.5C15 6.44 14.44 7 13.75 7h-3.5C9.56 7 9 6.44 9 5.75v-3.5zm1.5.25v3h3v-3h-3zM10.25 9C9.56 9 9 9.56 9 10.25v3.5c0 .69.56 1.25 1.25 1.25h3.5c.69 0 1.25-.56 1.25-1.25v-3.5C15 9.56 14.44 9 13.75 9h-3.5zm.25 4.5v-3h3v3h-3z"/>
+                            </svg>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="user-only hidden">
+                        <a href="/settings.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                            </svg>
+                            Settings
+                        </a>
+                    </li>
+                    <li class="user-only hidden">
+                        <a href="/contacts.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 15 15">
+                                <path d="M2 12.5V13H3V12.5H2ZM7 12.5V13H8V12.5H7ZM3 12.5V11.9999H2V12.5H3ZM7 11.9997V12.5H8V11.9997H7ZM5 10C6.10466 10 7 10.8952 7 11.9997H8C8 10.3427 6.65677 9 5 9V10ZM3 11.9999C3 10.8953 3.8954 10 5 10V9C3.34318 9 2 10.343 2 11.9999H3ZM5 4C3.89543 4 3 4.89543 3 6H4C4 5.44772 4.44772 5 5 5V4ZM7 6C7 4.89543 6.10457 4 5 4V5C5.55228 5 6 5.44772 6 6H7ZM5 8C6.10457 8 7 7.10457 7 6H6C6 6.55228 5.55228 7 5 7V8ZM5 7C4.44772 7 4 6.55228 4 6H3C3 7.10457 3.89543 8 5 8V7ZM1.5 3H13.5V2H1.5V3ZM14 3.5V11.5H15V3.5H14ZM13.5 12H1.5V13H13.5V12ZM1 11.5V3.5H0V11.5H1ZM1.5 12C1.22386 12 1 11.7761 1 11.5H0C0 12.3284 0.671574 13 1.5 13V12ZM14 11.5C14 11.7761 13.7761 12 13.5 12V13C14.3284 13 15 12.3284 15 11.5H14ZM13.5 3C13.7761 3 14 3.22386 14 3.5H15C15 2.67157 14.3284 2 13.5 2V3ZM1.5 2C0.671573 2 0 2.67157 0 3.5H1C1 3.22386 1.22386 3 1.5 3V2ZM9 6H12V5H9V6ZM9 9H12V8H9V9ZM0 15H15V14H0V15ZM3 0V2.5H4V0H3ZM11 0V2.5H12V0H11Z"/>
+                            </svg>
+                            Alert Contacts
+                        </a>
+                    </li>
+                    <li class="user-only hidden">
+                        <a href="/history.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12,24C5.4,24,0,18.6,0,12h2c0,5.5,4.5,10,10,10s10-4.5,10-10S17.5,2,12,2C8.4,2,5.1,3.9,3.3,7H8v2H0V1h2v4.4 C4.2,2.1,8,0,12,0c6.6,0,12,5.4,12,12S18.6,24,12,24z M15.3,17.8L11,13.4V6h2v6.6l3.7,3.8L15.3,17.8z"/>
+                            </svg>
+                            History & Statistics
+                        </a>
+                    </li>
+                    <li class="admin-only hidden">
+                        <a href="/admin/calibration.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6 8v11h12V8h-3V2h2v4h5v2h-2v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8H2V6h5V2h2v6H6zm7-6v6h-2V2h2z"/>
+                            </svg>
+                            Sensor Calibration
+                        </a>
+                    </li>
+                    <li class="admin-only hidden">
+                        <a href="/admin/system-logs.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 48 48">
+                                <path d="M24 43.9998H8V3.99977H40V23.9998" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <path d="M35.5 43.9998V30.9998" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <path d="M31 34.4998L32.5 32.9998L35.5 29.9998L38.5 32.9998L40 34.4998" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <path d="M16 15.9998H32" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+                                <path d="M16 23.9998H24" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+                            </svg>
+                            System Logs
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Sidebar Footer -->
+                <div class="absolute bottom-4 left-4 right-4">
+                    <div class="divider"></div>
+                    <div class="text-xs text-center text-base-content/50">
+                        <p>GasGuard v1.0.0</p>
+                        <p class="mt-1">IoT Gas Leak Detection System</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script src="../assets/js/theme.js"></script>
+    <script src="../assets/js/modals.js"></script>
+    <script src="../assets/js/nav.js"></script>
+    <script>
+        (function() {
+            'use strict';
+
+            const API_BASE = '/api';
+            let calibrationData = { mq6: null, mq2: null };
+
+            const showLoading = () => {
+                const overlay = document.getElementById('loading-overlay');
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
+            };
+            const hideLoading = () => {
+                const overlay = document.getElementById('loading-overlay');
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+            };
+
+            const showSuccess = (sensor, message) => {
+                const successEl = document.getElementById(`${sensor}-success`);
+                const textEl = document.getElementById(`${sensor}-success-text`);
+                textEl.textContent = message;
+                successEl.classList.remove('hidden');
+                setTimeout(() => successEl.classList.add('hidden'), 3000);
+            };
+
+            // Format date
+            function formatDate(dateString) {
+                return new Date(dateString).toLocaleString('en-US', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            }
+
+            function checkAdminAccess() {
+                const user = getUser();
+                if (!user || user.role !== 'admin') {
+                    // Redirect non-admin users to dashboard
+                    window.location.href = '/';
+                    return false;
+                }
+                return true;
+            }
+
+            // Load calibration status
+            async function loadCalibrationStatus() {
+                // Check admin access first
+                if (!checkAdminAccess()) return;
+                
+                const token = getToken();
+                if (!token) return;
+
+                try {
+                    showLoading();
+                    const response = await fetch(`${API_BASE}/calibration/status`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) throw new Error('Failed to load calibration status');
+
+                    const data = await response.json();
+                    calibrationData = data.calibration;
+                    
+                    updateSensorDisplay('mq6');
+                    updateSensorDisplay('mq2');
+                } catch (error) {
+                    console.error('Load calibration error:', error);
+                    showToast('Failed to load calibration data: ' + error.message);
+                } finally {
+                    hideLoading();
+                }
+            }
+
+            // Update sensor display
+            function updateSensorDisplay(sensor) {
+                const data = calibrationData[sensor];
+                if (!data) return;
+
+                // Update stats
+                document.getElementById(`${sensor}-last-cal`).textContent = formatDate(data.lastCalibration);
+                document.getElementById(`${sensor}-cal-type`).textContent = `${data.manualCalibrationCount} manual calibrations`;
+                document.getElementById(`${sensor}-drift`).textContent = `${data.drift.toFixed(2)}%`;
+                document.getElementById(`${sensor}-degradation`).textContent = data.degradation;
+                document.getElementById(`${sensor}-count`).textContent = data.manualCalibrationCount;
+
+                // Update inputs
+                document.getElementById(`${sensor}-baseline`).value = data.baselineResistance;
+                document.getElementById(`${sensor}-sensitivity`).value = data.sensitivityFactor;
+                document.getElementById(`${sensor}-auto`).checked = data.autoCalibrationEnabled;
+
+                // Update status badge
+                const badge = document.getElementById(`${sensor}-status-badge`);
+                if (data.status === 'good') {
+                    badge.className = 'badge badge-success badge-lg';
+                    badge.textContent = 'Good';
+                } else if (data.status === 'warning') {
+                    badge.className = 'badge badge-warning badge-lg';
+                    badge.textContent = 'Warning';
+                } else {
+                    badge.className = 'badge badge-error badge-lg';
+                    badge.textContent = 'Critical';
+                }
+            }
+
+            // Run calibration
+            window.runCalibration = async (sensor) => {
+                const token = getToken();
+                if (!token) {
+                    showToast('Please login first');
+                    return;
+                }
+
+                // Get and validate input values
+                const baselineResistance = parseFloat(document.getElementById(`${sensor}-baseline`).value);
+                const sensitivityFactor = parseFloat(document.getElementById(`${sensor}-sensitivity`).value);
+                
+                if (isNaN(baselineResistance) || baselineResistance <= 0) {
+                    showToast('Please enter a valid Baseline Resistance (must be > 0)');
+                    return;
+                }
+                
+                if (isNaN(sensitivityFactor) || sensitivityFactor <= 0) {
+                    showToast('Please enter a valid Sensitivity Factor (must be > 0)');
+                    return;
+                }
+
+                const confirmed = await showConfirm(`Run calibration for ${sensor.toUpperCase()}? This will take a few seconds.`);
+                if (!confirmed) {
+                    return;
+                }
+
+                try {
+                    showLoading();
+                    const response = await fetch(`${API_BASE}/calibration/calibrate/${sensor}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            baselineResistance,
+                            sensitivityFactor
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Calibration failed');
+                    }
+
+                    const data = await response.json();
+                    calibrationData[sensor] = data.calibration;
+                    updateSensorDisplay(sensor);
+                    showSuccess(sensor, `${sensor.toUpperCase()} calibration completed successfully!`);
+                } catch (error) {
+                    showToast('Calibration error: ' + error.message);
+                } finally {
+                    hideLoading();
+                }
+            };
+
+            // Save settings
+            window.saveSettings = async (sensor) => {
+                const token = getToken();
+                if (!token) {
+                    showToast('Please login first');
+                    return;
+                }
+
+                try {
+                    showLoading();
+                    const response = await fetch(`${API_BASE}/calibration/settings/${sensor}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            baselineResistance: parseFloat(document.getElementById(`${sensor}-baseline`).value),
+                            sensitivityFactor: parseFloat(document.getElementById(`${sensor}-sensitivity`).value),
+                            autoCalibrationEnabled: document.getElementById(`${sensor}-auto`).checked
+                        })
+                    });
+
+                    if (!response.ok) throw new Error('Failed to save settings');
+
+                    const data = await response.json();
+                    calibrationData[sensor] = data.calibration;
+                    updateSensorDisplay(sensor);
+                    showSuccess(sensor, 'Settings saved successfully!');
+                } catch (error) {
+                    showToast('Save error: ' + error.message);
+                } finally {
+                    hideLoading();
+                }
+            };
+
+            // Reset calibration
+            window.resetCalibration = async (sensor) => {
+                const token = getToken();
+                if (!token) {
+                    showToast('Please login first');
+                    return;
+                }
+
+                const confirmed = await showConfirm(`Reset ${sensor.toUpperCase()} to factory defaults? This cannot be undone.`);
+                if (!confirmed) {
+                    return;
+                }
+
+                try {
+                    showLoading();
+                    const response = await fetch(`${API_BASE}/calibration/reset/${sensor}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (!response.ok) throw new Error('Reset failed');
+
+                    const data = await response.json();
+                    calibrationData[sensor] = data.calibration;
+                    updateSensorDisplay(sensor);
+                    showSuccess(sensor, `${sensor.toUpperCase()} reset to factory defaults!`);
+                } catch (error) {
+                    showToast('Reset error: ' + error.message);
+                } finally {
+                    hideLoading();
+                }
+            };
+
+            // View calibration history
+            window.viewHistory = async (sensor) => {
+                const token = getToken();
+                if (!token) {
+                    showToast('Please login first');
+                    return;
+                }
+
+                try {
+                    showLoading();
+                    const response = await fetch(`${API_BASE}/calibration/history/${sensor}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) throw new Error('Failed to load history');
+
+                    const data = await response.json();
+                    displayHistory(sensor, data.history);
+                } catch (error) {
+                    showToast('History error: ' + error.message);
+                } finally {
+                    hideLoading();
+                }
+            };
+
+            // Display history in modal
+            function displayHistory(sensor, history) {
+                document.getElementById('history-sensor-name').textContent = sensor.toUpperCase();
+                
+                const tbody = document.getElementById('history-table-body');
+                tbody.innerHTML = history.map(record => `
+                    <tr>
+                        <td class="whitespace-nowrap">${formatDate(record.timestamp)}</td>
+                        <td><span class="badge badge-${record.type === 'manual' ? 'primary' : 'info'} badge-sm">${record.type}</span></td>
+                        <td>${record.baselineResistance.toFixed(2)} kΩ</td>
+                        <td>${record.sensitivityFactor.toFixed(2)}</td>
+                        <td>${record.driftBefore.toFixed(2)}%</td>
+                        <td>${record.driftAfter.toFixed(2)}%</td>
+                        <td><span class="badge badge-success badge-sm">${record.status}</span></td>
+                    </tr>
+                `).join('');
+
+                document.getElementById('history-modal').showModal();
+            }
+
+            // Close history modal
+            window.closeHistory = () => {
+                document.getElementById('history-modal').close();
+            };
+
+            // Initialize (load immediately, no delay)
+            window.addEventListener('load', () => {
+                loadCalibrationStatus();
+            });
+        })();
+    </script>
+</body>
+</html>

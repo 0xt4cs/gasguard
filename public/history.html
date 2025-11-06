@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History & Statistics - GasGuard</title>
+    <link rel="icon" type="image/png" href="assets/images/gasguard.png">
+    <link rel="stylesheet" href="assets/css/output.css">
+    <script src="assets/js/chart.min.js"></script>
+    <script src="assets/js/jspdf.umd.min.js"></script>
+    <script src="assets/js/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+</head>
+<body class="min-h-screen overflow-x-hidden">
+    <div class="drawer">
+        <input id="main-drawer" type="checkbox" class="drawer-toggle" />
+        
+        <!-- Main Content -->
+        <div class="drawer-content flex flex-col">
+            <!-- Navbar -->
+            <div class="navbar bg-base-100 border-b-2 border-base-300 shadow-sm">
+                <div class="navbar-start">
+                    <label for="main-drawer" class="btn btn-square btn-ghost drawer-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </label>
+                    <div class="flex items-center gap-3 ml-2">
+                        <div class="avatar">
+                            <div class="w-10 rounded">
+                                <img src="assets/images/gasguard.png" alt="GasGuard Logo" />
+                            </div>
+                        </div>
+                        <div class="hidden sm:block">
+                            <h1 class="text-xl font-bold">GasGuard</h1>
+                            <p class="text-xs text-base-content/70">History & Statistics</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="navbar-end gap-2">
+                    <div class="text-sm text-base-content/70 hidden md:block" id="current-time"></div>
+                    
+                    <!-- Login Button -->
+                    <button id="login-btn" class="btn btn-warning btn-sm gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Login</span>
+                    </button>
+                    
+                    <!-- User Dropdown -->
+                    <div id="user-dropdown" class="dropdown dropdown-end hidden">
+                        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar flex items-center justify-center p-0">
+                            <div class="w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-base" id="user-avatar">
+                                <span id="user-avatar-letter" class="flex items-center justify-center w-full h-full"></span>
+                            </div>
+                        </div>
+                        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-64 max-w-[calc(100vw-2rem)] p-2 shadow-lg border border-base-300 mt-2 right-0" style="background-color: hsl(var(--b1)) !important;">
+                            <li class="menu-title p-3 border-b border-base-300">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-lg" id="user-dropdown-avatar">
+                                        <span id="user-dropdown-avatar-letter"></span>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="font-semibold text-base-content" id="user-dropdown-username"></span>
+                                        <span class="text-xs text-base-content/70" id="user-dropdown-role"></span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="p-2">
+                                <label for="theme-toggle-dropdown" class="flex items-center justify-between w-full cursor-pointer">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-medium text-base-content">Theme</span>
+                                        <span class="text-xs text-base-content/60" id="theme-status">Light Mode</span>
+                                    </div>
+                                    <div class="swap swap-rotate">
+                                        <input type="checkbox" id="theme-toggle-dropdown" />
+                                        <svg class="swap-on w-5 h-5 fill-current" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <svg class="swap-off w-5 h-5 fill-current" viewBox="0 0 20 20">
+                                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                                        </svg>
+                                    </div>
+                                </label>
+                            </li>
+                            <li>
+                                <button id="logout-btn-dropdown" class="btn btn-error btn-sm w-full gap-2 justify-start">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                    </svg>
+                                    Logout
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            
+            <main class="flex-1 w-full">
+                <div class="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+                    <div class="text-sm breadcrumbs mb-6">
+                        <ul>
+                            <li><a href="/">Dashboard</a></li>
+                            <li>History & Statistics</li>
+                        </ul>
+                    </div>
+
+                <!-- Loading Overlay -->
+                <div id="loading-overlay" class="hidden fixed inset-0 bg-base-300/50 items-center justify-center z-50">
+                    <span class="loading loading-spinner loading-lg"></span>
+                </div>
+
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h1 class="text-3xl font-bold mb-2">History & Statistics</h1>
+                        <p class="text-base-content/70">View historical sensor data and analytics <span id="retention-info-text"></span></p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="export-data-btn" class="btn btn-warning gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                            Export CSV
+                        </button>
+                        <button id="export-pdf-btn" class="btn btn-error gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"></path></svg>
+                            Export PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics Summary -->
+                <div class="stats stats-vertical lg:stats-horizontal shadow w-full mb-6">
+                    <div class="stat">
+                        <div class="stat-figure text-primary">
+                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                        </div>
+                        <div class="stat-title">Total Records</div>
+                        <div class="stat-value text-primary" id="total-records">—</div>
+                        <div class="stat-desc" id="retention-period-stat">Loading...</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-figure text-warning">
+                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                        </div>
+                        <div class="stat-title">Low Level Alerts</div>
+                        <div class="stat-value text-warning" id="low-alerts">—</div>
+                        <div class="stat-desc" id="low-desc">Warning detections</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-figure text-error">
+                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                        </div>
+                        <div class="stat-title">Critical Alerts</div>
+                        <div class="stat-value text-error" id="critical-alerts">—</div>
+                        <div class="stat-desc" id="critical-desc">Gas leak events</div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="card bg-base-100 shadow-xl mb-6">
+                    <div class="card-body">
+                        <h3 class="card-title text-lg mb-4">Filter Data</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Start Date</span></label>
+                                <input type="date" id="filter-start" class="input input-bordered input-sm" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">End Date</span></label>
+                                <input type="date" id="filter-end" class="input input-bordered input-sm" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Alert Level</span></label>
+                                <select id="filter-alert" class="select select-bordered select-sm">
+                                    <option value="all">All Levels</option>
+                                    <option value="normal">Normal</option>
+                                    <option value="low">Low Level</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">&nbsp;</span></label>
+                                <button onclick="applyFilters()" class="btn btn-warning btn-sm">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"></path></svg>
+                                    Apply Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- MQ6 Sensor Trend Chart -->
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-body">
+                            <h3 class="card-title text-lg mb-4">MQ6 Sensor Trend (Last 24 Hours)</h3>
+                            <div class="h-64">
+                                <canvas id="mq6-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- MQ2 Sensor Trend Chart -->
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-body">
+                            <h3 class="card-title text-lg mb-4">MQ2 Sensor Trend (Last 24 Hours)</h3>
+                            <div class="h-64">
+                                <canvas id="mq2-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert Level Distribution Chart -->
+                <div class="card bg-base-100 shadow-xl mb-6">
+                    <div class="card-body">
+                        <h3 class="card-title text-lg mb-4">Alert Level Distribution</h3>
+                        <div class="h-64">
+                            <canvas id="alert-distribution-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert History Section -->
+                <div class="card bg-base-100 shadow-xl mb-6">
+                    <div class="card-body">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="card-title text-lg flex items-center gap-2">
+                                Alert History
+                            </h3>
+                            <div class="text-sm text-base-content/70">
+                                <span id="alert-count">0</span> alerts found
+                            </div>
+                        </div>
+
+                        <!-- Alert Timeline -->
+                        <div id="alert-history-container" class="max-h-[600px] overflow-y-auto">
+                            <ul id="alert-timeline" class="timeline timeline-vertical timeline-compact">
+                                <!-- Dynamically populated -->
+                                <li>
+                                    <div class="timeline-start text-xs opacity-70">Loading...</div>
+                                    <div class="timeline-middle">
+                                    </div>
+                                    <div class="timeline-end timeline-box">
+                                        <div class="text-sm">Loading alert history...</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Load More Button -->
+                        <div class="text-center mt-4">
+                            <button onclick="loadMoreAlerts()" id="load-more-alerts-btn" class="btn btn-sm btn-outline hidden">
+                                Load More Alerts
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="card bg-base-100 shadow-xl mb-6">
+                    <div class="card-body">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="card-title text-lg">Historical Data</h3>
+                            <div class="text-sm text-base-content/70">
+                                Showing <span id="showing-count">0</span> of <span id="total-count">0</span> records
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto w-full">
+                            <table class="table table-zebra w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="whitespace-nowrap">Date & Time</th>
+                                        <th class="text-center whitespace-nowrap">MQ6 (PPM)</th>
+                                        <th class="text-center whitespace-nowrap">MQ2 (PPM)</th>
+                                        <th class="text-center whitespace-nowrap">Gas Type</th>
+                                        <th class="text-center whitespace-nowrap">Alert Level</th>
+                                        <th class="whitespace-nowrap">Location</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-table-body">
+                                    <!-- Dynamically populated -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="flex justify-between items-center mt-4">
+                            <button onclick="previousPage()" id="prev-btn" class="btn btn-sm" disabled>
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                Previous
+                            </button>
+                            <span class="text-sm">Page <span id="current-page">1</span> of <span id="total-pages">1</span></span>
+                            <button onclick="nextPage()" id="next-btn" class="btn btn-sm">
+                                Next
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sensor Averages Chart -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-body">
+                            <h3 class="card-title text-lg mb-4">Sensor Trends</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span>MQ6 Average</span>
+                                        <span class="font-bold" id="chart-mq6-value">0 ppm</span>
+                                    </div>
+                                    <progress id="chart-mq6" class="progress progress-primary w-full" value="0" max="1000"></progress>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span>MQ2 Average</span>
+                                        <span class="font-bold" id="chart-mq2-value">0 ppm</span>
+                                    </div>
+                                    <progress id="chart-mq2" class="progress progress-secondary w-full" value="0" max="1000"></progress>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span>Max MQ6</span>
+                                        <span class="font-bold" id="chart-max-mq6">0 ppm</span>
+                                    </div>
+                                    <progress id="chart-max-mq6-bar" class="progress progress-warning w-full" value="0" max="1000"></progress>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span>Max MQ2</span>
+                                        <span class="font-bold" id="chart-max-mq2">0 ppm</span>
+                                    </div>
+                                    <progress id="chart-max-mq2-bar" class="progress progress-error w-full" value="0" max="1000"></progress>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-body">
+                            <h3 class="card-title text-lg mb-4">Alert Distribution</h3>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="badge badge-warning">Low</div>
+                                    <progress id="alert-low-bar" class="progress progress-warning flex-1" value="0" max="100"></progress>
+                                    <span class="text-sm font-bold" id="alert-low-pct">0%</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="badge badge-error">Critical</div>
+                                    <progress id="alert-critical-bar" class="progress progress-error flex-1" value="0" max="100"></progress>
+                                    <span class="text-sm font-bold" id="alert-critical-pct">0%</span>
+                                </div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="text-center">
+                                <div class="text-sm text-base-content/70">Data Retention Period</div>
+                                <div class="text-2xl font-bold" id="retention-period-display">Loading...</div>
+                                <div class="text-xs text-base-content/50 mt-1">Oldest: <span id="oldest-record">—</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Confirmation Modal -->
+                <dialog id="history-confirm-modal" class="modal">
+                    <div class="modal-box">
+                        <h3 class="font-bold text-lg mb-4">Confirm Action</h3>
+                        <p class="mb-4 whitespace-pre-wrap" id="history-confirm-message">Are you sure you want to proceed?</p>
+                        <div class="modal-action">
+                            <button onclick="historyCancelAction()" class="btn">Cancel</button>
+                            <button onclick="historyConfirmAction()" class="btn btn-warning" id="history-confirm-btn">Confirm</button>
+                        </div>
+                    </div>
+                    <form method="dialog" class="modal-backdrop"><button onclick="historyCancelAction()">close</button></form>
+                </dialog>
+                </div>
+            </main>
+
+        </div>
+        <!-- End of drawer-content -->
+
+        <!-- Drawer Side -->
+        <div class="drawer-side z-10">
+            <label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+            <aside class="bg-base-200 min-h-screen w-80 p-4">
+                <!-- Sidebar Header -->
+                <div class="flex items-center gap-3 px-4 py-6 border-b border-base-300">
+                    <div class="avatar">
+                        <div class="w-12 rounded-lg">
+                            <img src="assets/images/gasguard.png" alt="GasGuard Logo" />
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">GasGuard</h2>
+                        <p class="text-xs text-base-content/70">IoT Gas Leak Detection</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Menu -->
+                <ul class="menu p-0 mt-4 text-base">
+                    <li>
+                        <a href="/" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M1 2.25C1 1.56 1.56 1 2.25 1h3.5C6.44 1 7 1.56 7 2.25v11.5C7 14.44 6.44 15 5.75 15h-3.5C1.56 15 1 14.44 1 13.75V2.25zm1.5.25v11h3v-11h-3zM9 2.25C9 1.56 9.56 1 10.25 1h3.5c.69 0 1.25.56 1.25 1.25v3.5C15 6.44 14.44 7 13.75 7h-3.5C9.56 7 9 6.44 9 5.75v-3.5zm1.5.25v3h3v-3h-3zM10.25 9C9.56 9 9 9.56 9 10.25v3.5c0 .69.56 1.25 1.25 1.25h3.5c.69 0 1.25-.56 1.25-1.25v-3.5C15 9.56 14.44 9 13.75 9h-3.5zm.25 4.5v-3h3v3h-3z"/>
+                            </svg>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="user-only hidden">
+                        <a href="/settings.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                            </svg>
+                            Settings
+                        </a>
+                    </li>
+                    <li class="user-only hidden">
+                        <a href="/contacts.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 15 15">
+                                <path d="M2 12.5V13H3V12.5H2ZM7 12.5V13H8V12.5H7ZM3 12.5V11.9999H2V12.5H3ZM7 11.9997V12.5H8V11.9997H7ZM5 10C6.10466 10 7 10.8952 7 11.9997H8C8 10.3427 6.65677 9 5 9V10ZM3 11.9999C3 10.8953 3.8954 10 5 10V9C3.34318 9 2 10.343 2 11.9999H3ZM5 4C3.89543 4 3 4.89543 3 6H4C4 5.44772 4.44772 5 5 5V4ZM7 6C7 4.89543 6.10457 4 5 4V5C5.55228 5 6 5.44772 6 6H7ZM5 8C6.10457 8 7 7.10457 7 6H6C6 6.55228 5.55228 7 5 7V8ZM5 7C4.44772 7 4 6.55228 4 6H3C3 7.10457 3.89543 8 5 8V7ZM1.5 3H13.5V2H1.5V3ZM14 3.5V11.5H15V3.5H14ZM13.5 12H1.5V13H13.5V12ZM1 11.5V3.5H0V11.5H1ZM1.5 12C1.22386 12 1 11.7761 1 11.5H0C0 12.3284 0.671574 13 1.5 13V12ZM14 11.5C14 11.7761 13.7761 12 13.5 12V13C14.3284 13 15 12.3284 15 11.5H14ZM13.5 3C13.7761 3 14 3.22386 14 3.5H15C15 2.67157 14.3284 2 13.5 2V3ZM1.5 2C0.671573 2 0 2.67157 0 3.5H1C1 3.22386 1.22386 3 1.5 3V2ZM9 6H12V5H9V6ZM9 9H12V8H9V9ZM0 15H15V14H0V15ZM3 0V2.5H4V0H3ZM11 0V2.5H12V0H11Z"/>
+                            </svg>
+                            Alert Contacts
+                        </a>
+                    </li>
+                    <li class="user-only hidden">
+                        <a href="/history.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12,24C5.4,24,0,18.6,0,12h2c0,5.5,4.5,10,10,10s10-4.5,10-10S17.5,2,12,2C8.4,2,5.1,3.9,3.3,7H8v2H0V1h2v4.4 C4.2,2.1,8,0,12,0c6.6,0,12,5.4,12,12S18.6,24,12,24z M15.3,17.8L11,13.4V6h2v6.6l3.7,3.8L15.3,17.8z"/>
+                            </svg>
+                            History & Statistics
+                        </a>
+                    </li>
+                    <li class="admin-only hidden">
+                        <a href="/admin/calibration.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6 8v11h12V8h-3V2h2v4h5v2h-2v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8H2V6h5V2h2v6H6zm7-6v6h-2V2h2z"/>
+                            </svg>
+                            Sensor Calibration
+                        </a>
+                    </li>
+                    <li class="admin-only hidden">
+                        <a href="/admin/system-logs.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 48 48">
+                                <path d="M24 43.9998H8V3.99977H40V23.9998" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <path d="M35.5 43.9998V30.9998" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <path d="M31 34.4998L32.5 32.9998L35.5 29.9998L38.5 32.9998L40 34.4998" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <path d="M16 15.9998H32" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+                                <path d="M16 23.9998H24" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+                            </svg>
+                            System Logs
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Sidebar Footer -->
+                <div class="absolute bottom-4 left-4 right-4">
+                    <div class="divider"></div>
+                    <div class="text-xs text-center text-base-content/50">
+                        <p>GasGuard v1.0.0</p>
+                        <p class="mt-1">IoT Gas Leak Detection System</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script src="assets/js/theme.js"></script>
+    <script src="assets/js/nav.js"></script>
+    <script>
+        (function() {
+            'use strict';
+
+            const API_BASE = '/api';
+            let allData = [];
+            let filteredData = [];
+            let currentPage = 1;
+            const itemsPerPage = 50;
+            let stats = null;
+
+            const getToken = () => localStorage.getItem('token');
+
+            
+            // Toast notification system
+            function showToast(message, type = 'info') {
+                const toastContainer = document.getElementById('toast-container') || createToastContainer();
+                const toastId = 'toast-' + Date.now();
+                
+                const toast = document.createElement('div');
+                toast.id = toastId;
+                toast.className = `alert alert-${type} mb-2`;
+                toast.innerHTML = `
+                    <div>
+                        <span>${message}</span>
+                    </div>
+                    <button class="btn btn-sm btn-circle btn-ghost" onclick="closeToast('${toastId}')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                `;
+                
+                toastContainer.appendChild(toast);
+                
+                // Auto remove after 5 seconds
+                setTimeout(() => closeToast(toastId), 5000);
+            }
+            
+            function createToastContainer() {
+                const container = document.createElement('div');
+                container.id = 'toast-container';
+                container.className = 'toast toast-top toast-end z-50';
+                document.body.appendChild(container);
+                return container;
+            }
+            
+            function closeToast(toastId) {
+                const toast = document.getElementById(toastId);
+                if (toast) {
+                    toast.remove();
+                }
+            }
+
+            
+            // Confirmation modal system
+            let historyConfirmResolve = null;
+            
+            function showHistoryConfirm(message, buttonText = 'Confirm') {
+                return new Promise((resolve) => {
+                    const msgEl = document.getElementById('history-confirm-message');
+                    const btnEl = document.getElementById('history-confirm-btn');
+                    const dlg = document.getElementById('history-confirm-modal');
+                    if (!msgEl || !btnEl || !dlg) {
+                        console.error('[ERROR] History confirm modal elements missing');
+                        resolve(false);
+                        return;
+                    }
+                    msgEl.textContent = message;
+                    btnEl.textContent = buttonText;
+                    historyConfirmResolve = resolve;
+                    dlg.showModal();
+                });
+            }
+            
+            function historyConfirmAction() {
+                if (historyConfirmResolve) {
+                    historyConfirmResolve(true);
+                    historyConfirmResolve = null;
+                }
+                const dlg = document.getElementById('history-confirm-modal');
+                if (dlg) dlg.close();
+            }
+            
+            function historyCancelAction() {
+                if (historyConfirmResolve) {
+                    historyConfirmResolve(false);
+                    historyConfirmResolve = null;
+                }
+                const dlg = document.getElementById('history-confirm-modal');
+                if (dlg) dlg.close();
+            }
+
+            window.historyConfirmAction = historyConfirmAction;
+            window.historyCancelAction = historyCancelAction;
+
+            const showLoading = () => {
+                const overlay = document.getElementById('loading-overlay');
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
+            };
+            const hideLoading = () => {
+                const overlay = document.getElementById('loading-overlay');
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+            };
+
+            function parseSQLiteTimestamp(timestamp) {
+                if (!timestamp) return new Date();
+                return new Date(timestamp.replace(' ', 'T'));
+            }
+
+            // Format date
+            function formatDate(dateString) {
+                const date = parseSQLiteTimestamp(dateString);
+                return date.toLocaleString('en-US', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                });
+            }
+
+            // Load statistics
+            async function loadStats() {
+                const token = getToken();
+                if (!token) return;
+
+                try {
+                    const response = await fetch(`${API_BASE}/history/stats`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) throw new Error('Failed to load stats');
+
+                    const data = await response.json();
+                    stats = data.stats;
+                    updateStatsDisplay();
+                } catch (error) {
+                    console.error('Load stats error:', error);
+                }
+            }
+
+            // Update statistics display
+            function updateStatsDisplay() {
+                if (!stats) {
+                    console.warn('[DEBUG] No stats data to display');
+                    return;
+                }
+
+                console.log('[DEBUG] Updating stats display with data:', stats);
+
+                // Safely update elements with null checks
+                const safeUpdate = (id, value) => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.textContent = value;
+                    } else {
+                        console.error(`[ERROR] Element not found: ${id}`);
+                    }
+                };
+
+                safeUpdate('total-records', stats.totalRecords.toLocaleString());
+                safeUpdate('low-alerts', stats.alerts.low);
+                safeUpdate('critical-alerts', stats.alerts.critical);
+
+                // Update chart values
+                safeUpdate('chart-mq6-value', `${stats.averages.mq6} ppm`);
+                safeUpdate('chart-mq2-value', `${stats.averages.mq2} ppm`);
+                safeUpdate('chart-max-mq6', `${stats.maximums.mq6} ppm`);
+                safeUpdate('chart-max-mq2', `${stats.maximums.mq2} ppm`);
+
+                // Update progress bars
+                document.getElementById('chart-mq6').value = stats.averages.mq6;
+                document.getElementById('chart-mq2').value = stats.averages.mq2;
+                document.getElementById('chart-max-mq6-bar').value = stats.maximums.mq6;
+                document.getElementById('chart-max-mq2-bar').value = stats.maximums.mq2;
+
+                // Alert distribution
+                const totalAlerts = stats.alerts.low + stats.alerts.critical;
+                console.log('[DEBUG] Alert distribution:', { low: stats.alerts.low, critical: stats.alerts.critical, total: totalAlerts });
+                
+                if (totalAlerts > 0) {
+                    const lowPct = ((stats.alerts.low / totalAlerts) * 100).toFixed(1);
+                    const criticalPct = ((stats.alerts.critical / totalAlerts) * 100).toFixed(1);
+
+                    document.getElementById('alert-low-bar').value = parseFloat(lowPct);
+                    document.getElementById('alert-critical-bar').value = parseFloat(criticalPct);
+
+                    document.getElementById('alert-low-pct').textContent = `${lowPct}%`;
+                    document.getElementById('alert-critical-pct').textContent = `${criticalPct}%`;
+                } else {
+                    document.getElementById('alert-low-bar').value = 0;
+                    document.getElementById('alert-critical-bar').value = 0;
+                    document.getElementById('alert-low-pct').textContent = '0%';
+                    document.getElementById('alert-critical-pct').textContent = '0%';
+                }
+
+                if (stats.oldestRecord) {
+                    const oldestDate = new Date(stats.oldestRecord);
+                    document.getElementById('oldest-record').textContent = oldestDate.toLocaleDateString();
+                }
+            }
+
+            // Load historical data
+            async function loadData() {
+                const token = getToken();
+                if (!token) return;
+
+                try {
+                    showLoading();
+                    const response = await fetch(`${API_BASE}/history/data?limit=1000&sortOrder=desc`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) throw new Error('Failed to load history');
+
+                    const data = await response.json();
+                    allData = data.data;
+                    filteredData = [...allData];
+                    
+                    renderTable();
+                    updatePagination();
+                    updateCharts(allData);
+                } catch (error) {
+                    console.error('Load history error:', error);
+                    showToast('Failed to load history: ' + error.message);
+                } finally {
+                    hideLoading();
+                }
+            }
+
+            // Render table
+            function renderTable() {
+                const tbody = document.getElementById('history-table-body');
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                const pageData = filteredData.slice(start, end);
+
+                if (pageData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-base-content/50">No data found</td></tr>';
+                    document.getElementById('showing-count').textContent = '0';
+                    document.getElementById('total-count').textContent = filteredData.length;
+                    return;
+                }
+
+                tbody.innerHTML = pageData.map(record => {
+                    const alertBadgeClass = record.alertLevel === 'critical' ? 'badge-error' : 
+                                           record.alertLevel === 'low' ? 'badge-warning' : 'badge-success';
+                    
+                    return `
+                        <tr>
+                            <td class="whitespace-nowrap font-mono text-sm">${formatDate(record.timestamp)}</td>
+                            <td class="text-center font-semibold">${record.mq6.ppm.toFixed(2)}</td>
+                            <td class="text-center font-semibold">${record.mq2.ppm.toFixed(2)}</td>
+                            <td class="text-center">${record.gasType}</td>
+                            <td class="text-center"><span class="badge ${alertBadgeClass} badge-sm w-20 justify-center">${record.alertLevel}</span></td>
+                            <td class="text-xs font-mono">${record.gpsLocation ? `${record.gpsLocation.latitude.toFixed(4)}, ${record.gpsLocation.longitude.toFixed(4)}` : '—'}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                document.getElementById('showing-count').textContent = Math.min(end, filteredData.length);
+                document.getElementById('total-count').textContent = filteredData.length;
+            }
+
+            // Update pagination
+            function updatePagination() {
+                const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+                document.getElementById('current-page').textContent = currentPage;
+                document.getElementById('total-pages').textContent = totalPages || 1;
+
+                document.getElementById('prev-btn').disabled = currentPage === 1;
+                document.getElementById('next-btn').disabled = currentPage >= totalPages;
+            }
+
+            // Pagination functions
+            window.previousPage = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                    updatePagination();
+                }
+            };
+
+            window.nextPage = () => {
+                const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                    updatePagination();
+                }
+            };
+
+            // Apply filters
+            window.applyFilters = () => {
+                const startDate = document.getElementById('filter-start').value;
+                const endDate = document.getElementById('filter-end').value;
+                const alertLevel = document.getElementById('filter-alert').value;
+
+                filteredData = allData.filter(record => {
+                    const recordDate = parseSQLiteTimestamp(record.timestamp);
+                    
+                    // Date filters
+                    if (startDate && recordDate < new Date(startDate + 'T00:00:00')) return false;
+                    if (endDate) {
+                        const endDateTime = new Date(endDate + 'T23:59:59');
+                        if (recordDate > endDateTime) return false;
+                    }
+                    
+                    // Alert level filter
+                    if (alertLevel !== 'all' && record.alertLevel !== alertLevel) return false;
+                    
+                    return true;
+                });
+
+                currentPage = 1;
+                renderTable();
+                updatePagination();
+            };
+
+            // Export data to CSV
+            async function exportData() {
+                const token = getToken();
+                if (!token) {
+                    showToast('Please login first', 'error');
+                    return;
+                }
+
+                // Confirmation dialog
+                const confirmed = await showHistoryConfirm(
+                    'Export Historical Data\n\n' +
+                    'This will download a CSV file with all filtered sensor readings and alerts.\n\n' +
+                    'Continue with export?'
+                );
+                
+                console.log('[DEBUG] Export confirmation result:', confirmed);
+                if (!confirmed) return;
+
+                try {
+                    showLoading();
+                    
+                    // Build query params from filters
+                    const startDate = document.getElementById('filter-start').value;
+                    const endDate = document.getElementById('filter-end').value;
+                    let url = `${API_BASE}/history/export?format=csv`;
+                    if (startDate) url += `&startDate=${startDate}`;
+                    if (endDate) url += `&endDate=${endDate}`;
+                    console.log('[DEBUG] Export URL:', url);
+
+                    const response = await fetch(url, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    console.log('[DEBUG] Export response status:', response.status);
+                    console.log('[DEBUG] Export response headers:', response.headers.get('content-type'));
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('[ERROR] Export failed:', errorText);
+                        throw new Error('Failed to export data');
+                    }
+
+                    const blob = await response.blob();
+                    console.log('[DEBUG] Blob size:', blob.size, 'bytes');
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = `gasguard-history-${Date.now()}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(downloadUrl);
+                    a.remove();
+                    
+                    showToast('Data exported successfully', 'success');
+                } catch (error) {
+                    console.error('Export error:', error);
+                    showToast('Export failed: ' + error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            }
+
+            window.exportData = exportData;
+
+            async function exportDataAsPDF() {
+                const token = getToken();
+                if (!token) {
+                    showToast('Please login first', 'error');
+                    return;
+                }
+
+                // Confirmation dialog
+                const confirmed = await showHistoryConfirm(
+                    'Export Historical Data as PDF\n\n' +
+                    'This will generate a professionally formatted PDF with all filtered sensor readings.\n\n' +
+                    'Continue with export?'
+                );
+                
+                if (!confirmed) return;
+
+                try {
+                    showLoading();
+                    
+                    // Use filtered data 
+                    if (!filteredData || filteredData.length === 0) {
+                        showToast('No data to export', 'warning');
+                        hideLoading();
+                        return;
+                    }
+
+                    // Initialize jsPDF
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({
+                        orientation: 'landscape',
+                        unit: 'mm',
+                        format: 'a4'
+                    });
+
+                    // Get date range from filters
+                    const startDate = document.getElementById('filter-start').value || 'All';
+                    const endDate = document.getElementById('filter-end').value || 'All';
+                    const dateRange = startDate !== 'All' && endDate !== 'All' 
+                        ? `${startDate} to ${endDate}`
+                        : startDate !== 'All' 
+                        ? `From ${startDate}`
+                        : endDate !== 'All'
+                        ? `Until ${endDate}`
+                        : 'All Dates';
+
+                    // Add header
+                    doc.setFontSize(20);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('GasGuard - Sensor History Report', 148, 20, { align: 'center' });
+                    
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(`Date Range: ${dateRange}`, 148, 27, { align: 'center' });
+                    doc.text(`Generated: ${new Date().toLocaleString()}`, 148, 32, { align: 'center' });
+                    doc.text(`Total Records: ${filteredData.length}`, 148, 37, { align: 'center' });
+
+                    // Prepare table data
+                    const tableData = filteredData.map(record => [
+                        formatDate(record.timestamp),
+                        `${record.mq6.ppm} ppm`,
+                        `${record.mq2.ppm} ppm`,
+                        record.alertLevel.toUpperCase(),
+                        record.location || 'N/A',
+                        record.gpsStatus || 'N/A'
+                    ]);
+
+                    // Generate table
+                    doc.autoTable({
+                        startY: 45,
+                        head: [['Timestamp', 'MQ6 (LPG)', 'MQ2 (Smoke)', 'Alert Level', 'Location', 'GPS Status']],
+                        body: tableData,
+                        theme: 'striped',
+                        headStyles: {
+                            fillColor: [251, 191, 36], // Warning yellow
+                            textColor: [0, 0, 0],
+                            fontStyle: 'bold',
+                            halign: 'center'
+                        },
+                        styles: {
+                            fontSize: 8,
+                            cellPadding: 2,
+                            overflow: 'linebreak',
+                            halign: 'left'
+                        },
+                        columnStyles: {
+                            0: { cellWidth: 40 }, // Timestamp
+                            1: { cellWidth: 25, halign: 'right' }, // MQ6
+                            2: { cellWidth: 25, halign: 'right' }, // MQ2
+                            3: { cellWidth: 25, halign: 'center' }, // Alert Level
+                            4: { cellWidth: 'auto' }, // Location
+                            5: { cellWidth: 25, halign: 'center' } // GPS Status
+                        },
+                        alternateRowStyles: {
+                            fillColor: [245, 245, 245]
+                        },
+                        didDrawPage: function (data) {
+                            // Footer
+                            const pageCount = doc.internal.getNumberOfPages();
+                            const pageSize = doc.internal.pageSize;
+                            const pageHeight = pageSize.height || pageSize.getHeight();
+                            
+                            doc.setFontSize(8);
+                            doc.setFont('helvetica', 'normal');
+                            doc.text(
+                                `Page ${data.pageNumber} of ${pageCount}`,
+                                148,
+                                pageHeight - 10,
+                                { align: 'center' }
+                            );
+                            doc.text(
+                                'GasGuard IoT Gas Leak Detection System',
+                                10,
+                                pageHeight - 10
+                            );
+                        }
+                    });
+
+                    // Save PDF
+                    const filename = `gasguard-history-${new Date().toISOString().split('T')[0]}.pdf`;
+                    doc.save(filename);
+                    
+                    showToast('PDF exported successfully', 'success');
+                } catch (error) {
+                    console.error('PDF export error:', error);
+                    showToast('PDF export failed: ' + error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            }
+
+            // Expose PDF export function
+            window.exportDataAsPDF = exportDataAsPDF;
+
+            // Set default date range (uses local date, not UTC)
+            function setDefaultDates() {
+                const end = new Date();
+                const start = new Date();
+                start.setDate(start.getDate() - 30);
+
+                // Format as YYYY-MM-DD in LOCAL timezone (not UTC)
+                const formatLocalDate = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                };
+
+                document.getElementById('filter-end').value = formatLocalDate(end);
+                document.getElementById('filter-start').value = formatLocalDate(start);
+                
+                console.log('[DEBUG] Default date range set:');
+                console.log('  Start:', formatLocalDate(start));
+                console.log('  End:', formatLocalDate(end));
+            }
+
+            // Initialize
+            // Chart initialization
+            let mq6Chart, mq2Chart, alertChart;
+            
+            function initializeCharts() {
+                const mq6Ctx = document.getElementById('mq6-chart');
+                if (mq6Ctx) {
+                    mq6Chart = new Chart(mq6Ctx, {
+                        type: 'line',
+                        data: {
+                            labels: [],
+                            datasets: [{
+                                label: 'MQ6 PPM',
+                                data: [],
+                                borderColor: 'rgb(59, 130, 246)',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: { beginAtZero: true }
+                            },
+                            animation: { duration: 1000}
+                        }
+                    });
+                }
+
+                // MQ2 Sensor Trend Chart
+                const mq2Ctx = document.getElementById('mq2-chart');
+                if (mq2Ctx) {
+                    mq2Chart = new Chart(mq2Ctx, {
+                        type: 'line',
+                        data: {
+                            labels: [],
+                            datasets: [{
+                                label: 'MQ2 PPM',
+                                data: [],
+                                borderColor: 'rgb(16, 185, 129)',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: { beginAtZero: true }
+                            },
+                            animation: { duration: 1000}
+                        }
+                    });
+                }
+
+                // Alert Distribution Chart
+                const alertCtx = document.getElementById('alert-distribution-chart');
+                if (alertCtx) {
+                    alertChart = new Chart(alertCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Normal', 'Low Alert', 'Critical'],
+                            datasets: [{
+                                data: [0, 0, 0],
+                                backgroundColor: [
+                                    'rgb(34, 197, 94)',   // Green for normal
+                                    'rgb(245, 158, 11)',  // Yellow for low
+                                    'rgb(239, 68, 68)'    // Red for critical
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom' }
+                            },
+                            animation: { duration: 0 }
+                        }
+                    });
+                }
+            }
+
+            function updateCharts(data) {
+                if (!data || data.length === 0) {
+                    console.log('[DEBUG] No data for charts');
+                    return;
+                }
+
+                console.log('[DEBUG] Updating charts with', data.length, 'records');
+                console.log('[DEBUG] Sample data:', data[0]);
+
+                // Update trend charts
+                const last24Hours = data.slice(0, 24).reverse();
+                const labels = last24Hours.map(item => {
+                    const date = parseSQLiteTimestamp(item.timestamp);
+                    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                });
+
+                // Update MQ6 chart
+                if (mq6Chart) {
+                    mq6Chart.data.labels = labels;
+                    mq6Chart.data.datasets[0].data = last24Hours.map(item => item.mq6.ppm);
+                    mq6Chart.update('none'); // No animation for performance
+                    console.log('[DEBUG] MQ6 chart updated with', last24Hours.length, 'points');
+                }
+
+                // Update MQ2 chart
+                if (mq2Chart) {
+                    mq2Chart.data.labels = labels;
+                    mq2Chart.data.datasets[0].data = last24Hours.map(item => item.mq2.ppm);
+                    mq2Chart.update('none');
+                    console.log('[DEBUG] MQ2 chart updated with', last24Hours.length, 'points');
+                }
+
+                // Update alert distribution
+                if (alertChart) {
+                    const normal = data.filter(item => item.riskLevel === 'normal').length;
+                    const low = data.filter(item => item.riskLevel === 'low').length;
+                    const critical = data.filter(item => item.riskLevel === 'critical').length;
+                    
+                    alertChart.data.datasets[0].data = [normal, low, critical];
+                    alertChart.update('none');
+                }
+            }
+
+            // Alert History Management
+            let alertsOffset = 0;
+            const alertsLimit = 20;
+            let allAlerts = [];
+
+            // Load alert history
+            async function loadAlertHistory() {
+                const token = getToken();
+                if (!token) return;
+
+                try {
+                    const startDate = document.getElementById('filter-start').value;
+                    const endDate = document.getElementById('filter-end').value;
+                    const alertLevel = document.getElementById('filter-alert').value;
+
+                    console.log('[DEBUG] Loading alert history with filters:');
+                    console.log('  Start Date:', startDate);
+                    console.log('  End Date:', endDate);
+                    console.log('  Alert Level:', alertLevel);
+                    console.log('  Offset:', alertsOffset);
+
+                    let url = `${API_BASE}/alerts/history?limit=${alertsLimit}&offset=${alertsOffset}`;
+                    if (alertLevel && alertLevel !== 'all') {
+                        url += `&type=${alertLevel}`;
+                    }
+                    if (startDate) url += `&startDate=${startDate}`;
+                    if (endDate) url += `&endDate=${endDate}`;
+
+                    console.log('[DEBUG] API URL:', url);
+
+                    const response = await fetch(url, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) throw new Error('Failed to load alerts');
+
+                    const data = await response.json();
+                    console.log('[DEBUG] Alert history response:', {
+                        alertCount: data.alerts?.length || 0,
+                        total: data.total,
+                        firstAlert: data.alerts?.[0]?.created_at,
+                        lastAlert: data.alerts?.[data.alerts?.length - 1]?.created_at
+                    });
+                    
+                    if (alertsOffset === 0) {
+                        allAlerts = data.alerts || [];
+                    } else {
+                        allAlerts = [...allAlerts, ...(data.alerts || [])];
+                    }
+
+                    console.log('[DEBUG] Total alerts in allAlerts array:', allAlerts.length);
+                    renderAlertTimeline();
+                    
+                    // Update alert count
+                    document.getElementById('alert-count').textContent = data.total || allAlerts.length;
+
+                    // Show/hide load more button
+                    const loadMoreBtn = document.getElementById('load-more-alerts-btn');
+                    if (allAlerts.length < data.total) {
+                        loadMoreBtn.classList.remove('hidden');
+                    } else {
+                        loadMoreBtn.classList.add('hidden');
+                    }
+                } catch (error) {
+                    console.error('Load alerts error:', error);
+                    const timeline = document.getElementById('alert-timeline');
+                    timeline.innerHTML = `
+                        <li>
+                            <div class="timeline-start text-xs opacity-70">Error</div>
+                            <div class="timeline-middle">
+                            </div>
+                            <div class="timeline-end timeline-box">
+                                <div class="text-sm text-error">Failed to load alerts</div>
+                            </div>
+                        </li>
+                    `;
+                }
+            }
+
+            // Render alert timeline
+            function renderAlertTimeline() {
+                const timeline = document.getElementById('alert-timeline');
+                
+                console.log('[DEBUG] renderAlertTimeline called, allAlerts length:', allAlerts?.length || 0);
+                
+                if (!allAlerts || allAlerts.length === 0) {
+                    console.log('[DEBUG] No alerts to display - showing empty state');
+                    timeline.innerHTML = `
+                        <li>
+                            <div class="timeline-start text-xs opacity-70">—</div>
+                            <div class="timeline-middle">
+                                <svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div class="timeline-end timeline-box">
+                                <div class="text-sm">No alerts found for the selected date range</div>
+                            </div>
+                        </li>
+                    `;
+                    return;
+                }
+                
+                console.log('[DEBUG] Rendering', allAlerts.length, 'alerts to timeline');
+
+                timeline.innerHTML = allAlerts.map((alert, index) => {
+                    const alertTime = parseSQLiteTimestamp(alert.created_at);
+                    const timeStr = alertTime.toLocaleString();
+                    
+                    let iconColor, hrColor, typeLabel, icon, badgeClass;
+                    
+                    if (alert.alert_type === 'critical') {
+                        iconColor = 'text-error';
+                        hrColor = 'bg-error';
+                        typeLabel = 'CRITICAL ALERT';
+                        badgeClass = 'badge-error';
+                        icon = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>';
+                    } else {
+                        iconColor = 'text-warning';
+                        hrColor = 'bg-warning';
+                        typeLabel = 'Low Level Alert';
+                        badgeClass = 'badge-warning';
+                        icon = '<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>';
+                    }
+
+                    const recipients = alert.sms_recipients ? 
+                        (typeof alert.sms_recipients === 'string' ? JSON.parse(alert.sms_recipients) : alert.sms_recipients) : [];
+                    const smsStatus = alert.sms_sent 
+                        ? `<span class="badge badge-success badge-xs">SMS Sent</span>`
+                        : `<span class="badge badge-ghost badge-xs">SMS Pending</span>`;
+
+                    return `
+                        <li>
+                            <div class="timeline-start text-xs opacity-70 font-mono">${timeStr}</div>
+                            <div class="timeline-middle">
+                                <svg class="w-5 h-5 ${iconColor}" fill="currentColor" viewBox="0 0 20 20">${icon}</svg>
+                            </div>
+                            <div class="timeline-end timeline-box cursor-pointer hover:bg-base-200 transition-colors" onclick="showAlertDetailsHistory(${alert.id})">
+                                <div class="flex items-center flex-wrap gap-2 mb-1">
+                                    <span class="badge ${badgeClass} badge-sm w-32 justify-center">${typeLabel}</span>
+                                    ${smsStatus}
+                                </div>
+                                <div class="text-sm font-semibold mb-1">
+                                    ${alert.gas_type || 'Gas'} detected - ${alert.risk_level || 'unknown'} risk
+                                </div>
+                                <div class="text-xs opacity-70 space-x-3">
+                                    <span>MQ6: ${alert.mq6_ppm || 'N/A'} ppm</span>
+                                    <span>MQ2: ${alert.mq2_ppm || 'N/A'} ppm</span>
+                                    ${recipients.length > 0 ? `<span>${recipients.length} recipient(s)</span>` : ''}
+                                </div>
+                            </div>
+                            ${index < allAlerts.length - 1 ? `<hr class="${hrColor}"/>` : ''}
+                        </li>
+                    `;
+                }).join('');
+            }
+
+            // Load more alerts
+            window.loadMoreAlerts = function() {
+                console.log('[DEBUG] Loading more alerts...');
+                alertsOffset += alertsLimit;
+                loadAlertHistory();
+            };
+
+            // Show alert details in modal
+            async function showAlertDetailsHistory(alertId) {
+                try {
+                    const token = getToken();
+                    const response = await fetch(`${API_BASE}/alerts/${alertId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (!response.ok) throw new Error('Failed to load alert details');
+                    
+                    const data = await response.json();
+                    const alert = data.alert;
+                    
+                    // Populate modal
+                    const modal = document.getElementById('alert-details-modal');
+                    if (modal) {
+                        document.getElementById('modal-alert-type').textContent = alert.alert_type.toUpperCase();
+                        document.getElementById('modal-gas-type').textContent = alert.gas_type || 'N/A';
+                        document.getElementById('modal-mq6').textContent = alert.mq6_ppm ? `${alert.mq6_ppm} ppm` : 'N/A';
+                        document.getElementById('modal-mq2').textContent = alert.mq2_ppm ? `${alert.mq2_ppm} ppm` : 'N/A';
+                        document.getElementById('modal-timestamp').textContent = parseSQLiteTimestamp(alert.created_at).toLocaleString();
+                        document.getElementById('modal-location').textContent = 
+                            alert.gps_latitude && alert.gps_longitude 
+                                ? `${alert.gps_latitude}, ${alert.gps_longitude}` 
+                                : 'N/A';
+                        
+                        const recipients = alert.sms_recipients ? JSON.parse(alert.sms_recipients) : [];
+                        const statusBadge = document.getElementById('modal-sms-status');
+                        statusBadge.textContent = alert.sms_sent ? 'Sent' : 'Pending';
+                        statusBadge.className = alert.sms_sent ? 'badge badge-success' : 'badge badge-ghost';
+                        
+                        document.getElementById('modal-recipients').innerHTML = recipients.length > 0
+                            ? recipients.map(r => `<li>${r.name} (${r.phone}) - ${r.type}</li>`).join('')
+                            : '<li>No recipients</li>';
+                        
+                        modal.showModal();
+                    }
+                } catch (error) {
+                    console.error('Failed to load alert details:', error);
+                    showToast('Failed to load alert details', 'error');
+                }
+            }
+
+            // Override applyFilters to also reload alerts
+            const originalApplyFilters = window.applyFilters;
+            window.applyFilters = function() {
+                if (originalApplyFilters) originalApplyFilters();
+                alertsOffset = 0;
+                loadAlertHistory();
+            };
+
+            // Load retention period info
+            async function loadRetentionInfo() {
+                try {
+                    console.log('[DEBUG] Loading retention info...');
+                    const response = await fetch(`${API_BASE}/retention/check-retention`, {
+                        headers: {
+                            'Authorization': `Bearer ${getToken()}`,
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('[DEBUG] Retention policy received:', data.retentionPolicy);
+                        const days = data.retentionPolicy.days;
+                        
+                        let retentionText;
+                        if (days === -1) {
+                            retentionText = '(All data kept)';
+                            document.getElementById('retention-period-stat').textContent = 'All time';
+                            document.getElementById('retention-period-display').textContent = 'Never (All Data Kept)';
+                            console.log('[DEBUG] Set retention display to "Never (All Data Kept)"');
+                        } else {
+                            retentionText = `(${days}-day retention)`;
+                            document.getElementById('retention-period-stat').textContent = `Last ${days} days`;
+                            document.getElementById('retention-period-display').textContent = `${days} Days`;
+                            console.log(`[DEBUG] Set retention display to "${days} Days"`);
+                        }
+                        
+                        document.getElementById('retention-info-text').textContent = retentionText;
+                    } else {
+                        console.error('[ERROR] Failed to load retention info, status:', response.status);
+                    }
+                } catch (error) {
+                    console.error('[ERROR] Error loading retention info:', error);
+                    document.getElementById('retention-info-text').textContent = '';
+                    document.getElementById('retention-period-stat').textContent = 'Historical data';
+                    document.getElementById('retention-period-display').textContent = 'Configured';
+                }
+            }
+
+            window.addEventListener('load', async () => {
+                setDefaultDates();
+                initializeCharts(); 
+                loadRetentionInfo(); 
+                
+                // Set up export buttons
+                const exportBtn = document.getElementById('export-data-btn');
+                if (exportBtn) {
+                    exportBtn.addEventListener('click', exportData);
+                    console.log('[DEBUG] CSV export button listener attached');
+                } else {
+                    console.warn('[WARN] CSV export button not found');
+                }
+                
+                const exportPdfBtn = document.getElementById('export-pdf-btn');
+                if (exportPdfBtn) {
+                    exportPdfBtn.addEventListener('click', exportDataAsPDF);
+                    console.log('[DEBUG] PDF export button listener attached');
+                } else {
+                    console.warn('[WARN] PDF export button not found');
+                }
+                
+                // Load data immediately on page load
+                Promise.all([
+                    loadStats(),
+                    loadData(),
+                    loadAlertHistory()
+                ]).catch(err => {
+                    console.error('[ERROR] Failed to load page data:', err);
+                    showToast('Failed to load page data', 'error');
+                });
+            });
+        })();
+    </script>
+
+    <!-- Alert Details Modal -->
+    <dialog id="alert-details-modal" class="modal">
+        <div class="modal-box max-w-2xl">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </form>
+            <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                <svg class="w-6 h-6 text-warning" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                Alert Details
+            </h3>
+            
+            <div class="space-y-4">
+                <!-- Alert Type -->
+                <div class="stats shadow w-full">
+                    <div class="stat">
+                        <div class="stat-title">Alert Type</div>
+                        <div class="stat-value text-2xl" id="modal-alert-type">CRITICAL</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-title">Gas Type</div>
+                        <div class="stat-value text-2xl" id="modal-gas-type">LPG</div>
+                    </div>
+                </div>
+
+                <!-- Sensor Readings -->
+                <div class="card bg-base-200">
+                    <div class="card-body">
+                        <h4 class="card-title text-base">Sensor Readings</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-sm opacity-70">MQ6 (LPG/Butane)</div>
+                                <div class="text-xl font-bold" id="modal-mq6">850 ppm</div>
+                            </div>
+                            <div>
+                                <div class="text-sm opacity-70">MQ2 (Smoke/Flammable)</div>
+                                <div class="text-xl font-bold" id="modal-mq2">420 ppm</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time & Location -->
+                <div class="card bg-base-200">
+                    <div class="card-body">
+                        <h4 class="card-title text-base">Detection Details</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="opacity-70">Timestamp:</span>
+                                <span class="font-semibold" id="modal-timestamp">—</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="opacity-70">GPS Location:</span>
+                                <span class="font-semibold" id="modal-location">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SMS Notification Status -->
+                <div class="card bg-base-200">
+                    <div class="card-body">
+                        <h4 class="card-title text-base">SMS Notification</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm opacity-70">Status:</span>
+                                <span class="badge badge-success" id="modal-sms-status">Sent</span>
+                            </div>
+                            <div>
+                                <div class="text-sm opacity-70 mb-2">Recipients:</div>
+                                <ul class="list-disc list-inside text-sm space-y-1" id="modal-recipients">
+                                    <li>Loading...</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn">Close</button>
+                </form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
+    <!-- Shared Scripts -->
+    <script src="assets/js/theme.js"></script>
+    <script src="assets/js/modals.js"></script>
+    <script src="assets/js/nav.js"></script>
+    <script src="assets/js/dataRetentionWarning.js"></script>
+</body>
+</html>

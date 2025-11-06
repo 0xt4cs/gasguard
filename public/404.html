@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - GasGuard</title>
+    <link rel="icon" type="image/png" href="assets/images/gasguard.png">
+    <link rel="stylesheet" href="assets/css/output.css">
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+</head>
+<body class="min-h-screen bg-base-100">
+    <div class="hero min-h-screen">
+        <div class="hero-content text-center flex flex-col items-center justify-center">
+            <div class="max-w-md mx-auto">
+                <h1 class="text-9xl font-bold text-error">404</h1>
+                <h2 class="text-3xl font-bold mb-4">Page Not Found</h2>
+                <p class="text-base-content/70 mb-8">The page you're looking for doesn't exist.</p>
+                <a href="/" class="btn btn-warning">Go Home</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

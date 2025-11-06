@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alert Contacts - GasGuard</title>
+    <link rel="icon" type="image/png" href="assets/images/gasguard.png">
+    <link rel="stylesheet" href="assets/css/output.css">
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+</head>
+<body class="min-h-screen overflow-x-hidden">
+    <div class="drawer">
+        <input id="main-drawer" type="checkbox" class="drawer-toggle" />
+        
+        <!-- Main Content -->
+        <div class="drawer-content flex flex-col">
+            <!-- Navbar -->
+            <div class="navbar bg-base-100 border-b-2 border-base-300 shadow-sm">
+                <div class="navbar-start">
+                    <label for="main-drawer" class="btn btn-square btn-ghost drawer-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </label>
+                    <div class="flex items-center gap-3 ml-2">
+                        <div class="avatar">
+                            <div class="w-10 rounded">
+                                <img src="assets/images/gasguard.png" alt="GasGuard Logo" />
+                            </div>
+                        </div>
+                        <div class="hidden sm:block">
+                            <h1 class="text-xl font-bold">GasGuard</h1>
+                            <p class="text-xs text-base-content/70">Alert Contacts</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="navbar-end gap-2">
+                    <div class="text-sm text-base-content/70 hidden md:block" id="current-time"></div>
+                    
+                    <!-- Login Button -->
+                    <button id="login-btn" class="btn btn-warning btn-sm gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Login</span>
+                    </button>
+                    
+                    <!-- User Dropdown-->
+                    <div id="user-dropdown" class="dropdown dropdown-end hidden">
+                        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar flex items-center justify-center p-0">
+                            <div class="w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-base" id="user-avatar">
+                                <span id="user-avatar-letter" class="flex items-center justify-center w-full h-full"></span>
+                            </div>
+                        </div>
+                        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-64 max-w-[calc(100vw-2rem)] p-2 shadow-lg border border-base-300 mt-2 right-0" style="background-color: hsl(var(--b1)) !important;">
+                            <li class="menu-title p-3 border-b border-base-300">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-lg" id="user-dropdown-avatar">
+                                        <span id="user-dropdown-avatar-letter"></span>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="font-semibold text-base-content" id="user-dropdown-username"></span>
+                                        <span class="text-xs text-base-content/70" id="user-dropdown-role"></span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="p-2">
+                                <label for="theme-toggle-dropdown" class="flex items-center justify-between w-full cursor-pointer">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-medium text-base-content">Theme</span>
+                                        <span class="text-xs text-base-content/60" id="theme-status">Light Mode</span>
+                                    </div>
+                                    <div class="swap swap-rotate">
+                                        <input type="checkbox" id="theme-toggle-dropdown" />
+                                        <svg class="swap-on w-5 h-5 fill-current" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <svg class="swap-off w-5 h-5 fill-current" viewBox="0 0 20 20">
+                                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                                        </svg>
+                                    </div>
+                                </label>
+                            </li>
+                            <li>
+                                <button id="logout-btn-dropdown" class="btn btn-error btn-sm w-full gap-2 justify-start">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                    </svg>
+                                    Logout
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+    <!-- Login Modal -->
+    <dialog id="login-modal" class="modal">
+        <div class="modal-box max-w-md p-0 overflow-hidden">
+            <!-- Close Button -->
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle absolute right-4 top-4 z-10 bg-base-100 border-0 hover:bg-error hover:text-error-content shadow-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </form>
+            
+            <!-- Header Section -->
+            <div class="bg-base-100 pt-12 pb-6 text-center">
+                <h3 class="text-2xl font-bold mb-1">Welcome!</h3>
+                <p class="text-base-content/60 text-sm">Sign in for full access</p>
+            </div>
+            
+            <!-- Form Section -->
+            <div class="p-8 pt-4">
+                <form id="login-form" class="space-y-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Username</span>
+                        </label>
+                        <input type="text" id="username" name="username" class="input input-bordered w-full" placeholder="Enter username" required autocomplete="username" />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Password</span>
+                        </label>
+                        <input type="password" id="password" name="password" class="input input-bordered w-full" placeholder="Enter password" required autocomplete="current-password" />
+                    </div>
+
+                    <div id="login-error" class="hidden alert alert-error">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>Invalid credentials. Please try again.</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-full gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        </svg>
+                        Sign In
+                    </button>
+                </form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
+            
+            <main class="flex-1 w-full">
+                <div class="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+                    <div class="text-sm breadcrumbs mb-6">
+                        <ul>
+                            <li><a href="/">Dashboard</a></li>
+                            <li>Alert Contacts</li>
+                        </ul>
+                    </div>
+
+                <!-- Loading Overlay -->
+                <div id="loading-overlay" class="hidden fixed inset-0 bg-base-300/50 flex items-center justify-center z-50">
+                    <span class="loading loading-spinner loading-lg"></span>
+                </div>
+
+                <h1 class="text-3xl font-bold mb-2">Alert Contacts</h1>
+                <p class="text-base-content/70 mb-6">Manage internal and external emergency contacts for SMS alerts</p>
+
+                <!-- Tabs  -->
+                <div id="tab-container" class="bg-base-200 rounded-xl p-1 flex gap-1 border border-base-300 shadow-sm mb-6">
+                    <button id="tab-internal" role="tab" class="flex-1 px-3 py-1 rounded-lg font-semibold text-lg transition-all duration-300 bg-base-100 shadow-lg text-base-content border border-base-300">
+                        Internal Contacts
+                    </button>
+                    <button id="tab-external" role="tab" class="flex-1 px-3 py-1 rounded-lg font-semibold text-lg transition-all duration-300 text-base-content/50 hover:text-base-content/80 hover:bg-base-300/30">
+                        External Contacts
+                    </button>
+                </div>
+
+                <!-- Internal Contacts Section -->
+                <div id="internal-section" class="space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-primary">Internal Contacts</h2>
+                            <p class="text-sm text-base-content/70">Family members, and friends/neighbors</p>
+                        </div>
+                        <button id="add-internal-btn" class="btn btn-warning gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+                            Add
+                        </button>
+                    </div>
+
+                    <!-- Internal Contacts List -->
+                    <div id="internal-contacts-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Dynamically populated -->
+                    </div>
+
+                    <div id="internal-empty" class="hidden card bg-base-200 shadow-xl">
+                        <div class="card-body text-center">
+                            <svg class="w-12 h-12 mx-auto text-base-content/30" fill="currentColor" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M7.07926 0.222253C7.31275 -0.007434 7.6873 -0.007434 7.92079 0.222253L14.6708 6.86227C14.907 7.09465 14.9101 7.47453 14.6778 7.71076C14.4454 7.947 14.0655 7.95012 13.8293 7.71773L13 6.90201V12.5C13 12.7761 12.7762 13 12.5 13H2.50002C2.22388 13 2.00002 12.7761 2.00002 12.5V6.90201L1.17079 7.71773C0.934558 7.95012 0.554672 7.947 0.32229 7.71076C0.0899079 7.47453 0.0930283 7.09465 0.32926 6.86227L7.07926 0.222253ZM7.50002 1.49163L12 5.91831V12H10V8.49999C10 8.22385 9.77617 7.99999 9.50002 7.99999H6.50002C6.22388 7.99999 6.00002 8.22385 6.00002 8.49999V12H3.00002V5.91831L7.50002 1.49163ZM7.00002 12H9.00002V8.99999H7.00002V12Z"></path>
+                            </svg>
+                            <h3 class="text-lg font-bold mt-4">No internal contacts yet</h3>
+                            <p class="text-sm text-base-content/70">Add contacts who should be notified when gas is detected</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- External Contacts Section -->
+                <div id="external-section" class="hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-secondary">External Contacts</h2>
+                            <p class="text-sm text-base-content/70">Emergency services</p>
+                        </div>
+                        <button id="add-external-btn" class="btn btn-warning gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+                            Add
+                        </button>
+                    </div>
+
+                    <!-- External Contacts List -->
+                    <div id="external-contacts-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Dynamically populated -->
+                    </div>
+
+                    <div id="external-empty" class="hidden card bg-base-200 shadow-xl">
+                        <div class="card-body text-center">
+                            <svg class="w-12 h-12 mx-auto text-base-content/30" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M10,7.17157288 L10,2 L14,2 L14,7.17157288 L17.6568542,3.51471863 L20.4852814,6.34314575 L16.8284271,10 L22,10 L22,14 L16.8284271,14 L20.4852814,17.6568542 L17.6568542,20.4852814 L14,16.8284271 L14,22 L10,22 L10,16.8284271 L6.34314575,20.4852814 L3.51471863,17.6568542 L7.17157288,14 L2,14 L2,10 L7.17157288,10 L3.51471863,6.34314575 L6.34314575,3.51471863 L10,7.17157288 Z"/>
+                            </svg>
+                            <h3 class="text-lg font-bold mt-4">No external contacts yet</h3>
+                            <p class="text-sm text-base-content/70">Add emergency services who should be notified when gas is detected</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add/Edit Internal Contact Modal -->
+                <dialog id="internal-modal" class="modal">
+                    <div class="modal-box">
+                        <form method="dialog">
+                            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </form>
+                        <h3 id="internal-modal-title" class="font-bold text-lg mb-4">Add Internal Contact</h3>
+                        <form id="internal-form" class="space-y-4">
+                            <input type="hidden" id="internal-id" />
+                            
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Name *</span></label>
+                                <input type="text" id="internal-name" placeholder="e.g., Juan Dela Cruz" class="input input-bordered w-full" required />
+                            </div>
+                            
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Phone Number *</span></label>
+                                <input type="tel" id="internal-phone" placeholder="e.g., +63 912 345 6789" class="input input-bordered w-full" required />
+                            </div>
+                            
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Alternate Phone</span></label>
+                                <input type="tel" id="internal-alternate" placeholder="Optional alternate number" class="input input-bordered w-full" />
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="text-sm">Internal contacts are for family members, neighbors, and local contacts.</span>
+                            </div>
+                            
+                            <div class="modal-action">
+                                <button type="button" onclick="closeInternalModal()" class="btn">Cancel</button>
+                                <button type="submit" class="btn btn-warning">Save Contact</button>
+                            </div>
+                        </form>
+                    </div>
+                    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+                </dialog>
+
+                <!-- Add/Edit External Contact Modal (Admin Only) -->
+                <dialog id="external-modal" class="modal">
+                    <div class="modal-box">
+                        <form method="dialog">
+                            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </form>
+                        <h3 id="external-modal-title" class="font-bold text-lg mb-4">Add External Contact</h3>
+                        <form id="external-form" class="space-y-4">
+                            <input type="hidden" id="external-id" />
+                            
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Name *</span></label>
+                                <input type="text" id="external-name" placeholder="e.g., Fire Department" class="input input-bordered w-full" required />
+                            </div>
+                            
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Phone Number *</span></label>
+                                <input type="tel" id="external-phone" placeholder="e.g., 911" class="input input-bordered w-full" required />
+                            </div>
+                            
+                            <div class="form-control">
+                                <label class="label"><span class="label-text">Alternate Phone</span></label>
+                                <input type="tel" id="external-alternate" placeholder="Optional alternate number" class="input input-bordered w-full" />
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="text-sm">External contacts are for emergency services and authorities.</span>
+                            </div>
+                            
+                            <div class="modal-action">
+                                <button type="button" onclick="closeExternalModal()" class="btn">Cancel</button>
+                                <button type="submit" class="btn btn-warning">Save Contact</button>
+                            </div>
+                        </form>
+                    </div>
+                    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+                </dialog>
+            
+    <!-- Confirmation Modal -->
+    <dialog id="confirm-modal" class="modal">
+        <div class="modal-box">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </form>
+            <h3 class="font-bold text-lg mb-4">Confirm Action</h3>
+            <p class="mb-4" id="confirm-message">Are you sure you want to proceed?</p>
+            <div class="modal-action">
+                <button onclick="document.getElementById('confirm-modal').close()" class="btn">Cancel</button>
+                <button onclick="confirmAction()" class="btn btn-warning" id="confirm-btn">Confirm</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+                </div>
+            </main>
+
+        </div>
+        <!-- End of drawer-content -->
+
+        <!-- Drawer Side (Sidebar) -->
+        <div class="drawer-side z-10">
+            <label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+            <aside class="bg-base-200 min-h-screen w-80 p-4">
+                <!-- Sidebar Header -->
+                <div class="flex items-center gap-3 px-4 py-6 border-b border-base-300">
+                    <div class="avatar">
+                        <div class="w-12 rounded-lg">
+                            <img src="assets/images/gasguard.png" alt="GasGuard Logo" />
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">GasGuard</h2>
+                        <p class="text-xs text-base-content/70">IoT Gas Leak Detection</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Menu -->
+                <ul class="menu p-0 mt-4 text-base">
+                    <li>
+                        <a href="/" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M1 2.25C1 1.56 1.56 1 2.25 1h3.5C6.44 1 7 1.56 7 2.25v11.5C7 14.44 6.44 15 5.75 15h-3.5C1.56 15 1 14.44 1 13.75V2.25zm1.5.25v11h3v-11h-3zM9 2.25C9 1.56 9.56 1 10.25 1h3.5c.69 0 1.25.56 1.25 1.25v3.5C15 6.44 14.44 7 13.75 7h-3.5C9.56 7 9 6.44 9 5.75v-3.5zm1.5.25v3h3v-3h-3zM10.25 9C9.56 9 9 9.56 9 10.25v3.5c0 .69.56 1.25 1.25 1.25h3.5c.69 0 1.25-.56 1.25-1.25v-3.5C15 9.56 14.44 9 13.75 9h-3.5zm.25 4.5v-3h3v3h-3z"/>
+                            </svg>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="user-only hidden">
+                        <a href="/settings.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                            </svg>
+                            Settings
+                        </a>
+                    </li>
+                    <li class="user-only hidden">
+                        <a href="/contacts.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 15 15">
+                                <path d="M2 12.5V13H3V12.5H2ZM7 12.5V13H8V12.5H7ZM3 12.5V11.9999H2V12.5H3ZM7 11.9997V12.5H8V11.9997H7ZM5 10C6.10466 10 7 10.8952 7 11.9997H8C8 10.3427 6.65677 9 5 9V10ZM3 11.9999C3 10.8953 3.8954 10 5 10V9C3.34318 9 2 10.343 2 11.9999H3ZM5 4C3.89543 4 3 4.89543 3 6H4C4 5.44772 4.44772 5 5 5V4ZM7 6C7 4.89543 6.10457 4 5 4V5C5.55228 5 6 5.44772 6 6H7ZM5 8C6.10457 8 7 7.10457 7 6H6C6 6.55228 5.55228 7 5 7V8ZM5 7C4.44772 7 4 6.55228 4 6H3C3 7.10457 3.89543 8 5 8V7ZM1.5 3H13.5V2H1.5V3ZM14 3.5V11.5H15V3.5H14ZM13.5 12H1.5V13H13.5V12ZM1 11.5V3.5H0V11.5H1ZM1.5 12C1.22386 12 1 11.7761 1 11.5H0C0 12.3284 0.671574 13 1.5 13V12ZM14 11.5C14 11.7761 13.7761 12 13.5 12V13C14.3284 13 15 12.3284 15 11.5H14ZM13.5 3C13.7761 3 14 3.22386 14 3.5H15C15 2.67157 14.3284 2 13.5 2V3ZM1.5 2C0.671573 2 0 2.67157 0 3.5H1C1 3.22386 1.22386 3 1.5 3V2ZM9 6H12V5H9V6ZM9 9H12V8H9V9ZM0 15H15V14H0V15ZM3 0V2.5H4V0H3ZM11 0V2.5H12V0H11Z"/>
+                            </svg>
+                            Alert Contacts
+                        </a>
+                    </li>
+                    <li class="user-only hidden">
+                        <a href="/history.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12,24C5.4,24,0,18.6,0,12h2c0,5.5,4.5,10,10,10s10-4.5,10-10S17.5,2,12,2C8.4,2,5.1,3.9,3.3,7H8v2H0V1h2v4.4 C4.2,2.1,8,0,12,0c6.6,0,12,5.4,12,12S18.6,24,12,24z M15.3,17.8L11,13.4V6h2v6.6l3.7,3.8L15.3,17.8z"/>
+                            </svg>
+                            History & Statistics
+                        </a>
+                    </li>
+                    <li class="admin-only hidden">
+                        <a href="/admin/calibration.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6 8v11h12V8h-3V2h2v4h5v2h-2v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8H2V6h5V2h2v6H6zm7-6v6h-2V2h2z"/>
+                            </svg>
+                            Sensor Calibration
+                        </a>
+                    </li>
+                    <li class="admin-only hidden">
+                        <a href="/admin/system-logs.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 48 48">
+                                <path d="M24 43.9998H8V3.99977H40V23.9998" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <path d="M35.5 43.9998V30.9998" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <path d="M31 34.4998L32.5 32.9998L35.5 29.9998L38.5 32.9998L40 34.4998" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <path d="M16 15.9998H32" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+                                <path d="M16 23.9998H24" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+                            </svg>
+                            System Logs
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Sidebar Footer -->
+                <div class="absolute bottom-4 left-4 right-4">
+                    <div class="divider"></div>
+                    <div class="text-xs text-center text-base-content/50">
+                        <p>GasGuard v1.0.0</p>
+                        <p class="mt-1">IoT Gas Leak Detection System</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script src="assets/js/theme.js"></script>
+    <script src="assets/js/modals.js"></script>
+    <script src="assets/js/nav.js"></script>
+    <script>
+        (function() {
+            'use strict';
+
+            const API_BASE = '/api';
+            let internalContacts = [];
+            let externalContacts = [];
+            let editingInternalId = null;
+            let editingExternalId = null;
+
+            const showLoading = () => {
+                const overlay = document.getElementById('loading-overlay');
+                overlay.classList.remove('hidden');
+                overlay.classList.add('flex');
+            };
+            const hideLoading = () => {
+                const overlay = document.getElementById('loading-overlay');
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+            };
+
+            document.getElementById('tab-internal').addEventListener('click', (e) => {
+                e.preventDefault();
+                const internalTab = document.getElementById('tab-internal');
+                const externalTab = document.getElementById('tab-external');
+                
+                internalTab.className = 'flex-1 px-3 py-1 rounded-lg font-semibold text-lg transition-all duration-300 bg-base-100 shadow-lg text-base-content border border-base-300';
+                externalTab.className = 'flex-1 px-3 py-1 rounded-lg font-semibold text-lg transition-all duration-300 text-base-content/50 hover:text-base-content/80 hover:bg-base-300/30';
+                
+                // Show/hide sections
+                document.getElementById('internal-section').classList.remove('hidden');
+                document.getElementById('external-section').classList.add('hidden');
+            });
+
+            document.getElementById('tab-external').addEventListener('click', (e) => {
+                e.preventDefault();
+                const internalTab = document.getElementById('tab-internal');
+                const externalTab = document.getElementById('tab-external');
+                
+                externalTab.className = 'flex-1 px-3 py-1 rounded-lg font-semibold text-lg transition-all duration-300 bg-base-100 shadow-lg text-base-content border border-base-300';
+                internalTab.className = 'flex-1 px-3 py-1 rounded-lg font-semibold text-lg transition-all duration-300 text-base-content/50 hover:text-base-content/80 hover:bg-base-300/30';
+                
+                // Show/hide sections
+                document.getElementById('external-section').classList.remove('hidden');
+                document.getElementById('internal-section').classList.add('hidden');
+            });
+
+            // Load all contacts
+            async function loadContacts() {
+                const token = getToken();
+                if (!token) {
+                    return;
+                }
+
+                try {
+                    showLoading();
+                    const response = await fetch(`${API_BASE}/contacts`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || 'Failed to load contacts');
+                    }
+
+                    const data = await response.json();
+                    internalContacts = (data.contacts.internal || []).map(contact => ({
+                        ...contact,
+                        alternatePhone: contact.email || contact.alternatePhone
+                    }));
+                    externalContacts = data.contacts.external || [];
+                    
+                    renderInternalContacts();
+                    renderExternalContacts();
+                    
+                    const user = getUser();
+                    const addExternalBtn = document.getElementById('add-external-btn');
+                    if (addExternalBtn) {
+                        if (user && user.role === 'admin') {
+                            addExternalBtn.classList.remove('hidden');
+                        } else {
+                            addExternalBtn.classList.add('hidden');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Load contacts error:', error);
+                    showToast('Failed to load contacts: ' + error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            }
+
+            function renderInternalContacts() {
+                const container = document.getElementById('internal-contacts-list');
+                const emptyState = document.getElementById('internal-empty');
+
+                if (internalContacts.length === 0) {
+                    container.innerHTML = '';
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
+                container.innerHTML = internalContacts.map(contact => `
+                    <div class="card bg-base-200 border border-base-300">
+                        <div class="card-body p-6">
+                            <h3 class="text-lg font-semibold mb-3">${contact.name}</h3>
+                            <div class="space-y-2 mb-4">
+                                <p class="text-sm flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
+                                    <span class="font-medium">Phone:</span> ${contact.phone}
+                                </p>
+                                ${contact.alternate_phone ? `<p class="text-sm flex items-center gap-2 text-base-content/70">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
+                                    <span class="font-medium">Alternate:</span> ${contact.alternate_phone}
+                                </p>` : ''}
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="editInternalContact(${contact.id})" class="btn btn-sm btn-warning flex-1">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path></svg>
+                                    Edit
+                                </button>
+                                <button onclick="deleteInternalContact(${contact.id})" class="btn btn-sm btn-error flex-1">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Render external contacts
+            function renderExternalContacts() {
+                const container = document.getElementById('external-contacts-list');
+                const emptyState = document.getElementById('external-empty');
+                
+                // Check if user is admin
+                const user = getUser();
+                const isAdmin = user && user.role === 'admin';
+
+                if (externalContacts.length === 0) {
+                    container.innerHTML = '';
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
+                container.innerHTML = externalContacts.map(contact => `
+                    <div class="card bg-base-200 border border-base-300">
+                        <div class="card-body p-6">
+                            <h3 class="text-lg font-semibold mb-3">${contact.name}</h3>
+                            <div class="space-y-2 mb-4">
+                                <p class="text-sm flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
+                                    <span class="font-medium">Phone:</span> ${contact.phone}
+                                </p>
+                                ${contact.alternate_phone ? `<p class="text-sm flex items-center gap-2 text-base-content/70">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>
+                                    <span class="font-medium">Alternate:</span> ${contact.alternate_phone}
+                                </p>` : ''}
+                            </div>
+                            ${isAdmin ? `
+                            <div class="flex gap-2">
+                                <button onclick="editExternalContact(${contact.id})" class="btn btn-sm btn-warning flex-1">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path></svg>
+                                    Edit
+                                </button>
+                                <button onclick="deleteExternalContact(${contact.id})" class="btn btn-sm btn-error flex-1">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                                    Delete
+                                </button>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            window.openAddInternalModal = () => {
+                if (internalContacts.length >= 10) {
+                    showToast('Maximum of 10 internal contacts reached! Please delete an existing contact before adding a new one.', 'warning');
+                    return;
+                }
+                
+                editingInternalId = null;
+                document.getElementById('internal-modal-title').textContent = 'Add Internal Contact';
+                document.getElementById('internal-form').reset();
+                
+                const modal = document.getElementById('internal-modal');
+                if (modal) {
+                    modal.showModal();
+                } else {
+                    console.error('Modal element not found!');
+                    showToast('Error: Could not open modal', 'error');
+                }
+            };
+
+            window.closeInternalModal = () => {
+                document.getElementById('internal-modal').close();
+            };
+
+            window.openAddExternalModal = () => {
+                editingExternalId = null;
+                document.getElementById('external-modal-title').textContent = 'Add External Contact';
+                document.getElementById('external-form').reset();
+                
+                const modal = document.getElementById('external-modal');
+                if (modal) {
+                    modal.showModal();
+                } else {
+                    console.error('External modal element not found!');
+                    showToast('Error: Could not open modal', 'error');
+                }
+            };
+
+            window.closeExternalModal = () => {
+                document.getElementById('external-modal').close();
+            };
+
+            window.editInternalContact = (id) => {
+                const contact = internalContacts.find(c => c.id === id);
+                if (!contact) return;
+
+                editingInternalId = id;
+                document.getElementById('internal-modal-title').textContent = 'Edit Internal Contact';
+                document.getElementById('internal-name').value = contact.name;
+                document.getElementById('internal-phone').value = contact.phone;
+                document.getElementById('internal-alternate').value = contact.alternate_phone || '';
+                document.getElementById('internal-modal').showModal();
+            };
+
+            window.editExternalContact = (id) => {
+                const contact = externalContacts.find(c => c.id === id);
+                if (!contact) return;
+
+                editingExternalId = id;
+                document.getElementById('external-modal-title').textContent = 'Edit External Contact';
+                document.getElementById('external-name').value = contact.name;
+                document.getElementById('external-phone').value = contact.phone;
+                document.getElementById('external-alternate').value = contact.alternate_phone || '';
+                document.getElementById('external-modal').showModal();
+            };
+
+            // Delete functions with confirmation
+            window.deleteInternalContact = async (id) => {
+                const contact = internalContacts.find(c => c.id === id);
+                const contactName = contact ? contact.name : 'this contact';
+                
+                const confirmed = await showConfirm(
+                    `Are you sure you want to delete "${contactName}"? This action cannot be undone.`,
+                    'Delete Contact',
+                    true
+                );
+                
+                if (!confirmed) return;
+
+                const token = getToken();
+                if (!token) {
+                    showToast('Authentication required. Please login.', 'error');
+                    return;
+                }
+
+                try {
+                    showLoading();
+                    const response = await fetch(`${API_BASE}/contacts/internal/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || 'Failed to delete contact');
+                    }
+
+                    showToast(`Contact "${contactName}" deleted successfully`, 'success');
+                    await loadContacts();
+                } catch (error) {
+                    console.error('Delete error:', error);
+                    showToast('Error deleting contact: ' + error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            };
+
+            window.deleteExternalContact = async (id) => {
+                const contact = externalContacts.find(c => c.id === id);
+                const contactName = contact ? contact.name : 'this contact';
+                
+                const confirmed = await showConfirm(
+                    `Are you sure you want to delete "${contactName}"? This action cannot be undone.`,
+                    'Delete Contact',
+                    true
+                );
+                
+                if (!confirmed) return;
+
+                const token = getToken();
+                if (!token) {
+                    showToast('Authentication required. Please login.', 'error');
+                    return;
+                }
+
+                try {
+                    showLoading();
+                    const response = await fetch(`${API_BASE}/contacts/external/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || 'Failed to delete contact');
+                    }
+
+                    showToast(`Contact "${contactName}" deleted successfully`, 'success');
+                    await loadContacts();
+                } catch (error) {
+                    console.error('Delete error:', error);
+                    showToast('Error deleting contact: ' + error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            };
+
+            // Form submissions
+            document.getElementById('internal-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const token = getToken();
+                if (!token) {
+                    showToast('Please login first', 'warning');
+                    return;
+                }
+
+                // Internal contacts - all have type 'INTERNAL' (set by backend)
+                const alternatePhoneValue = document.getElementById('internal-alternate').value.trim();
+                const contactData = {
+                    name: document.getElementById('internal-name').value.trim(),
+                    phone: document.getElementById('internal-phone').value.trim(),
+                    alternatePhone: alternatePhoneValue || null // Send null if empty
+                };
+
+                // Validation
+                if (!contactData.name || contactData.name.length < 2) {
+                    showToast('Please enter a valid name (at least 2 characters)', 'error');
+                    return;
+                }
+
+                if (!contactData.phone || contactData.phone.length < 10) {
+                    showToast('Please enter a valid phone number', 'error');
+                    return;
+                }
+
+                try {
+                    showLoading();
+                    const url = editingInternalId 
+                        ? `${API_BASE}/contacts/internal/${editingInternalId}`
+                        : `${API_BASE}/contacts/internal`;
+                    
+                    const response = await fetch(url, {
+                        method: editingInternalId ? 'PUT' : 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(contactData)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || 'Failed to save contact');
+                    }
+
+                    const successMessage = editingInternalId 
+                        ? `Contact "${contactData.name}" updated successfully`
+                        : `Contact "${contactData.name}" added successfully`;
+                    
+                    showToast(successMessage, 'success');
+                    closeInternalModal();
+                    await loadContacts();
+                } catch (error) {
+                    console.error('Save error:', error);
+                    showToast('Error saving contact: ' + error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+
+            document.getElementById('external-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const token = getToken();
+                if (!token) {
+                    showToast('Please login first', 'warning');
+                    return;
+                }
+
+                // External contacts default to 'emergency' type
+                const alternatePhoneValue = document.getElementById('external-alternate').value.trim();
+                const contactData = {
+                    name: document.getElementById('external-name').value.trim(),
+                    phone: document.getElementById('external-phone').value.trim(),
+                    alternatePhone: alternatePhoneValue || null, // Send null if empty
+                    type: 'EXTERNAL' // All external contacts are emergency services
+                };
+
+                // Validation
+                if (!contactData.name || contactData.name.length < 2) {
+                    showToast('Please enter a valid name (at least 2 characters)', 'error');
+                    return;
+                }
+
+                if (!contactData.phone || contactData.phone.length < 10) {
+                    showToast('Please enter a valid phone number', 'error');
+                    return;
+                }
+
+                try {
+                    showLoading();
+                    const url = editingExternalId 
+                        ? `${API_BASE}/contacts/external/${editingExternalId}`
+                        : `${API_BASE}/contacts/external`;
+                    
+                    const response = await fetch(url, {
+                        method: editingExternalId ? 'PUT' : 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(contactData)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || 'Failed to save contact');
+                    }
+
+                    const successMessage = editingExternalId 
+                        ? `External contact "${contactData.name}" updated successfully`
+                        : `External contact "${contactData.name}" added successfully`;
+                    
+                    showToast(successMessage, 'success');
+                    closeExternalModal();
+                    await loadContacts();
+                } catch (error) {
+                    console.error('Save error:', error);
+                    showToast('Error saving contact: ' + error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+
+            // Add event listeners for buttons (fixes CSP issue)
+            document.addEventListener('DOMContentLoaded', () => {
+                const addInternalBtn = document.getElementById('add-internal-btn');
+                const addExternalBtn = document.getElementById('add-external-btn');
+                
+                if (addInternalBtn) {
+                    addInternalBtn.addEventListener('click', openAddInternalModal);
+                }
+                
+                if (addExternalBtn) {
+                    addExternalBtn.addEventListener('click', openAddExternalModal);
+                }
+            });
+
+            // Load contacts on page load (load immediately, no delay)
+            window.addEventListener('load', () => {
+                loadContacts();
+            });
+        })();
+    </script>
+</body>
+</html>

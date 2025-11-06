@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GasGuard - IoT Gas Leak Detection System</title>
+    <link rel="icon" type="image/png" href="assets/images/gasguard.png">
+    <link rel="stylesheet" href="assets/css/output.css">
+    <script src="assets/js/socket.io.min.js"></script>
+    <script src="assets/js/theme.js"></script>
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+</head>
+<body class="min-h-screen overflow-x-hidden">
+    <div class="drawer">
+        <input id="main-drawer" type="checkbox" class="drawer-toggle" />
+        
+        <!-- Main Content -->
+        <div class="drawer-content flex flex-col">
+            <!-- Navbar -->
+            <div class="navbar bg-base-100 border-b-2 border-base-300 shadow-sm">
+                <div class="navbar-start">
+                    <label for="main-drawer" class="btn btn-square btn-ghost drawer-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </label>
+                    <div class="flex items-center gap-3 ml-2">
+                        <div class="avatar">
+                            <div class="w-10 rounded">
+                                <img src="assets/images/gasguard.png" alt="GasGuard Logo" />
+                            </div>
+                        </div>
+                        <div class="hidden sm:block">
+                            <h1 class="text-xl font-bold">GasGuard</h1>
+                            <p class="text-xs text-base-content/70">IoT Gas Leak Detection</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="navbar-end gap-2">
+                    <div class="text-sm text-base-content/70 hidden md:block" id="current-time"></div>
+                    
+                    <!-- Login Button -->
+                    <button id="login-btn" class="btn btn-warning btn-sm gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Login</span>
+                    </button>
+                    
+                    <!-- User Dropdown -->
+                    <div id="user-dropdown" class="dropdown dropdown-end hidden">
+                        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar flex items-center justify-center p-0">
+                            <div class="w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-base" id="user-avatar">
+                                <span id="user-avatar-letter" class="flex items-center justify-center w-full h-full"></span>
+                            </div>
+                        </div>
+                        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-64 max-w-[calc(100vw-2rem)] p-2 shadow-lg border border-base-300 mt-2 right-0" style="background-color: hsl(var(--b1)) !important;">
+                            <li class="menu-title p-3 border-b border-base-300">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-lg" id="user-dropdown-avatar">
+                                        <span id="user-dropdown-avatar-letter"></span>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="font-semibold text-base-content" id="user-dropdown-username"></span>
+                                        <span class="text-xs text-base-content/70" id="user-dropdown-role"></span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="p-2">
+                                <label for="theme-toggle-dropdown" class="flex items-center justify-between w-full cursor-pointer">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-medium text-base-content">Theme</span>
+                                        <span class="text-xs text-base-content/60" id="theme-status">Light Mode</span>
+                                    </div>
+                                    <div class="swap swap-rotate">
+                                        <input type="checkbox" id="theme-toggle-dropdown" />
+                                        <svg class="swap-on w-5 h-5 fill-current" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <svg class="swap-off w-5 h-5 fill-current" viewBox="0 0 20 20">
+                                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                                        </svg>
+                                    </div>
+                                </label>
+                            </li>
+                            <li>
+                                <button id="logout-btn-dropdown" class="btn btn-error btn-sm w-full gap-2 justify-start">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                    </svg>
+                                    Logout
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+    <!-- Login Modal -->
+    <dialog id="login-modal" class="modal">
+        <div class="modal-box max-w-md p-0 overflow-hidden">
+            <!-- Close Button -->
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle absolute right-4 top-4 z-10 bg-base-100 border-0 hover:bg-error hover:text-error-content shadow-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </form>
+            
+            <!-- Header Section -->
+            <div class="bg-base-100 pt-12 pb-6 text-center">
+                <h3 class="text-2xl font-bold mb-1">Welcome!</h3>
+                <p class="text-base-content/60 text-sm">Sign in for full access</p>
+            </div>
+            
+            <!-- Form Section -->
+            <div class="p-8 pt-4">
+                <form id="login-form" class="space-y-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Username</span>
+                        </label>
+                        <input type="text" id="username" name="username" class="input input-bordered w-full" placeholder="Enter username" required autocomplete="username" />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Password</span>
+                        </label>
+                        <input type="password" id="password" name="password" class="input input-bordered w-full" placeholder="Enter password" required autocomplete="current-password" />
+                    </div>
+
+                    <div id="login-error" class="hidden alert alert-error">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>Invalid credentials. Please try again.</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning w-full gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        </svg>
+                        Sign In
+                    </button>
+                </form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
+    <!-- Main Content -->
+    <main class="flex-1 w-full">
+        <div class="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+             <!-- System Status Overview -->
+             <div class="stats stats-vertical lg:stats-horizontal shadow w-full mb-8 overflow-visible">
+             <!-- Alert Level Stat -->
+             <div class="stat">
+                 <div class="stat-figure text-success">
+                     <svg id="alert-icon" class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                         </svg>
+                 </div>
+                 <div class="stat-title">Alert Level</div>
+                 <div id="alert-level" class="stat-value text-success">NORMAL</div>
+                 <div class="stat-desc">System operational</div>
+             </div>
+
+             <!-- Smart Detection Stat -->
+             <div class="stat">
+                 <div class="stat-figure">
+                     <svg id="smart-detection-icon" class="w-10 h-10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                         <path d="M8 12H14M5 9H16.5C17.8807 9 19 7.88071 19 6.5C19 5.11929 17.8807 4 16.5 4M4 15H17C18.1046 15 19 15.8954 19 17C19 18.1046 18.1046 19 17 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                         </svg>
+                     </div>
+                 <div class="stat-title">Smart Detection</div>
+                 <div id="gas-type" class="stat-value">Clean Air</div>
+                 <div class="stat-desc">
+                     <span id="confidence">Confidence: 0%</span>
+                     <div id="risk-badge" class="badge badge-success badge-sm mt-1">MINIMAL</div>
+                 </div>
+             </div>
+
+            <!-- MQ6 Sensor Stat -->
+            <div class="stat">
+                <div class="stat-figure text-info">
+                    <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"></path>
+                        </svg>
+                    </div>
+                <div class="stat-title">MQ6 (LPG/Butane)</div>
+                <div id="mq6-ppm" class="stat-value">0.00 ppm</div>
+                <div class="stat-desc">
+                    <span id="mq6-voltage">0.00V</span>
+                    <div id="mq6-badge" class="badge badge-success badge-sm mt-1">NORMAL</div>
+                </div>
+            </div>
+
+            <!-- MQ2 Sensor Stat -->
+            <div class="stat">
+                <div class="stat-figure text-secondary">
+                    <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8z"></path>
+                        </svg>
+                    </div>
+                <div class="stat-title">MQ2 (Multi-Gas/Smoke)</div>
+                <div id="mq2-ppm" class="stat-value">0.00 ppm</div>
+                <div class="stat-desc">
+                    <span id="mq2-voltage">0.00V</span>
+                    <div id="mq2-badge" class="badge badge-success badge-sm mt-1">NORMAL</div>
+                </div>
+            </div>
+
+            <!-- GPS Status Stat -->
+            <div class="stat">
+                <div id="gps-icon" class="stat-figure text-error">
+                    <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                        </svg>
+                </div>
+                <div class="stat-title">GPS Location</div>
+                <div id="gps-status" class="stat-value">No signal</div>
+                <div class="stat-desc">
+                    <a id="gps-coords" href="#" target="_blank" class="text-xs hover:text-primary hover:underline cursor-pointer transition-colors tooltip" data-tip="Click to open in Google Maps">Searching...</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sensor Data and Hardware Status Cards -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Real-time Sensor Data Card -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M6 8v11h12V8h-3V2h2v4h5v2h-2v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8H2V6h5V2h2v6H6zm7-6v6h-2V2h2z"/>
+                    </svg>
+                    Real-time Sensor Data
+                    </h2>
+                <div class="space-y-4">
+                        <!-- MQ6 Sensor -->
+                        <div class="flex items-center gap-4 p-4 bg-base-200 rounded-lg">
+                            <div class="radial-progress text-info" style="--value:0; --size:4rem;" role="progressbar" id="mq6-progress">
+                                <span class="text-xs font-bold">0%</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <div class="badge badge-info badge-sm"></div>
+                                    <span class="font-semibold">MQ6 (LPG/Butane)</span>
+                                </div>
+                                <div id="mq6-chart-value" class="text-lg font-bold">0.00 ppm</div>
+                                <div class="text-xs opacity-70">Raw: <span id="mq6-raw">0</span></div>
+                            </div>
+                        </div>
+                        
+                        <!-- MQ2 Sensor -->
+                        <div class="flex items-center gap-4 p-4 bg-base-200 rounded-lg">
+                            <div class="radial-progress text-secondary" style="--value:0; --size:4rem;" role="progressbar" id="mq2-progress">
+                                <span class="text-xs font-bold">0%</span>
+                        </div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <div class="badge badge-secondary badge-sm"></div>
+                                    <span class="font-semibold">MQ2 (Multi-Gas/Smoke)</span>
+                    </div>
+                                <div id="mq2-chart-value" class="text-lg font-bold">0.00 ppm</div>
+                                <div class="text-xs opacity-70">Raw: <span id="mq2-raw">0</span></div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hardware Status Card -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M37.5,0h-13A1.5,1.5,0,0,0,23,1.5v13A1.5,1.5,0,0,0,24.5,16h13A1.5,1.5,0,0,0,39,14.5V1.5A1.5,1.5,0,0,0,37.5,0Zm0,15H28v-.5a.5.5,0,0,0-1,0V15H26V12.5a.5.5,0,0,0-1,0V15h-.5a.5.5,0,0,1-.5-.5V1.5a.5.5,0,0,1,.5-.5H29V9.5a.5.5,0,0,0,.5.5h1.592a1.5,1.5,0,1,0,0-1H30V1h7.5a.5.5,0,0,1,.5.5V2H35.5a.5.5,0,0,0,0,1H38V4H36.5a.5.5,0,0,0,0,1H38V6H33V4.908a1.5,1.5,0,1,0-1,0V6.5a.5.5,0,0,0,.5.5H38v7.5A.5.5,0,0,1,37.5,15ZM32,9.5a.5.5,0,1,1,.5.5A.5.5,0,0,1,32,9.5Zm0-6a.5.5,0,1,1,.5.5A.5.5,0,0,1,32,3.5ZM35.5,11a1.5,1.5,0,0,0-1.408,1H28.707L27,10.293V4.908a1.5,1.5,0,1,0-1,0V10.5a.5.5,0,0,0,.146.354l2,2A.5.5,0,0,0,28.5,13h5.592A1.5,1.5,0,1,0,35.5,11Zm-9-8a.5.5,0,1,1-.5.5A.5.5,0,0,1,26.5,3Zm9,10a.5.5,0,1,1,.5-.5A.5.5,0,0,1,35.5,13Z" transform="translate(-23)"/>
+                    </svg>
+                    Hardware Status
+                    </h2>
+                <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+                            <span class="font-medium">MCP3008 ADC</span>
+                            <div id="mcp3008-status" class="badge badge-error gap-2">
+                                Initializing...
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+                            <span class="font-medium">GPS Module</span>
+                            <div id="gps-hardware-status" class="badge badge-error gap-2">
+                                Initializing...
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+                            <span class="font-medium">LEDs</span>
+                            <div id="led-status" class="badge badge-error gap-2">
+                                Initializing...
+                    </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+                            <span class="font-medium">Buzzer</span>
+                            <div id="buzzer-status" class="badge badge-error gap-2">
+                                Initializing...
+                        </div>
+                    </div>
+                        <div id="buzzer-details" class="text-xs opacity-70 ml-4 hidden">
+                            <div id="buzzer-pattern"></div>
+                            <div id="buzzer-hold-time"></div>
+                        </div>
+                    </div>
+                </div>
+                         </div>
+                     </div>
+
+
+        <!-- Development Controls -->
+        <!-- Recent Detection -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title gap-2">
+                    <svg class="w-5 h-5" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M24 43.9998H8V3.99977H40V23.9998" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M35.5 43.9998V30.9998" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M31 34.4998L32.5 32.9998L35.5 29.9998L38.5 32.9998L40 34.4998" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16 15.9998H32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M16 23.9998H24" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+                Recent Detection
+                <span class="badge badge-sm badge-ghost">Last 30 mins</span>
+                </h2>
+                <ul id="activity-log" class="timeline timeline-vertical timeline-compact max-h-96 overflow-y-auto">
+                    <li>
+                        <div class="timeline-start text-xs opacity-70">Now</div>
+                        <div class="timeline-middle">
+                            <svg class="w-5 h-5 text-info" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div class="timeline-end timeline-box">
+                            <div class="font-semibold text-info">System</div>
+                            <div class="text-sm">Dashboard initialized and connecting to hardware...</div>
+                </div>
+                        <hr class="bg-info"/>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    
+    <!-- Confirmation Modal -->
+    <dialog id="confirm-modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg mb-4">Confirm Action</h3>
+            <p class="mb-4" id="confirm-message">Are you sure you want to proceed?</p>
+            <div class="modal-action">
+                <button onclick="document.getElementById('confirm-modal').close()" class="btn">Cancel</button>
+                <button onclick="confirmAction()" class="btn btn-warning" id="confirm-btn">Confirm</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
+    <!-- Alert Details Modal -->
+    <dialog id="alert-details-modal" class="modal">
+        <div class="modal-box max-w-2xl">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </form>
+            <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                <svg class="w-6 h-6 text-warning" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                Alert Details
+            </h3>
+            
+            <div class="space-y-4">
+                <!-- Alert Type -->
+                <div class="stats shadow w-full">
+                    <div class="stat">
+                        <div class="stat-title">Alert Type</div>
+                        <div class="stat-value text-2xl" id="modal-alert-type">CRITICAL</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-title">Gas Type</div>
+                        <div class="stat-value text-2xl" id="modal-gas-type">LPG</div>
+                    </div>
+                </div>
+
+                <!-- Sensor Readings -->
+                <div class="card bg-base-200">
+                    <div class="card-body">
+                        <h4 class="card-title text-base">Sensor Readings</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-sm opacity-70">MQ6 (LPG/Butane)</div>
+                                <div class="text-xl font-bold" id="modal-mq6">850 ppm</div>
+                            </div>
+                            <div>
+                                <div class="text-sm opacity-70">MQ2 (Smoke/Flammable)</div>
+                                <div class="text-xl font-bold" id="modal-mq2">420 ppm</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time & Location -->
+                <div class="card bg-base-200">
+                    <div class="card-body">
+                        <h4 class="card-title text-base">Detection Details</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="opacity-70">Timestamp:</span>
+                                <span class="font-semibold" id="modal-timestamp">—</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="opacity-70">GPS Location:</span>
+                                <span class="font-semibold" id="modal-location">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SMS Notification Status -->
+                <div class="card bg-base-200">
+                    <div class="card-body">
+                        <h4 class="card-title text-base">SMS Notification</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm opacity-70">Status:</span>
+                                <span class="badge badge-success" id="modal-sms-status">Sent</span>
+                            </div>
+                            <div>
+                                <div class="text-sm opacity-70 mb-2">Recipients:</div>
+                                <ul class="list-disc list-inside text-sm space-y-1" id="modal-recipients">
+                                    <li>Loading...</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-action">
+                <form method="dialog">
+                    <button class="btn">Close</button>
+                </form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+        </div>
+    </main>
+
+    <script>
+        // Theme initialization is handled by nav.js
+        // This is just to set initial theme before nav.js loads
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+
+        // WebSocket connection
+        const socket = io();
+        let isConnected = false;
+
+        // Connection status
+        socket.on('connect', () => {
+            isConnected = true;
+            addActivityLog('Connected to hardware system', 'success');
+        });
+
+        socket.on('disconnect', () => {
+            isConnected = false;
+            addActivityLog('Disconnected from hardware system', 'error');
+        });
+
+        // Hardware status updates
+        socket.on('hardware-status', (data) => {
+            updateHardwareStatus(data);
+            
+            // Also update GPS from hardware status
+            if (data.gpsData) {
+                updateGPS(data.gpsData);
+            }
+        });
+
+        // Sensor data updates
+        socket.on('sensor-data', (data) => {
+            updateSensorData(data);
+        });
+
+        // GPS updates (real-time)
+        socket.on('gps-update', (gpsData) => {
+            updateGPS(gpsData);
+        });
+
+        // Hardware error handling
+        socket.on('hardware-error', (data) => {
+            addActivityLog(`Hardware error: ${data.error}`, 'error');
+            if (data.retrying) {
+                addActivityLog('Retrying hardware initialization...', 'warning');
+            }
+        });
+
+        // Update connection status
+        let lastKnownAlertLevel = 'normal';
+        
+        // Update sensor data
+        function updateSensorData(data) {
+            // Update main cards
+            document.getElementById('mq6-ppm').textContent = data.sensorData.mq6.ppm.toFixed(2) + ' ppm';
+            document.getElementById('mq6-voltage').textContent = (data.sensorData.mq6.raw * 3.3 / 1024).toFixed(2) + 'V';
+            document.getElementById('mq2-ppm').textContent = data.sensorData.mq2.ppm.toFixed(2) + ' ppm';
+            document.getElementById('mq2-voltage').textContent = (data.sensorData.mq2.raw * 3.3 / 1024).toFixed(2) + 'V';
+
+            // Update smart detection data
+            if (data.sensorData.fused) {
+                updateSmartDetection(data.sensorData.fused);
+            }
+
+            // Update chart values
+            document.getElementById('mq6-chart-value').textContent = data.sensorData.mq6.ppm.toFixed(2) + ' ppm';
+            document.getElementById('mq6-raw').textContent = data.sensorData.mq6.raw;
+            document.getElementById('mq2-chart-value').textContent = data.sensorData.mq2.ppm.toFixed(2) + ' ppm';
+            document.getElementById('mq2-raw').textContent = data.sensorData.mq2.raw;
+
+            // Update alert level
+            if (data.currentAlertLevel && data.currentAlertLevel !== lastKnownAlertLevel) {
+                lastKnownAlertLevel = data.currentAlertLevel;
+                updateAlertLevel(data.currentAlertLevel);
+            }
+
+            // Update GPS
+            if (data.gpsData) {
+                updateGPS(data.gpsData);
+            }
+
+            // Update hardware status
+            if (data.hardwareStatus) {
+                updateHardwareStatus(data);
+            }
+        }
+
+        // Update smart detection data
+        function updateSmartDetection(fusedData) {
+            // Update gas type
+            document.getElementById('gas-type').textContent = fusedData.gasType;
+            
+            // Update confidence
+            document.getElementById('confidence').textContent = `Confidence: ${fusedData.confidence.toFixed(0)}%`;
+            
+            // Update risk level badge
+            updateRiskBadge(fusedData.riskLevel);
+            
+            // Update sensor contribution badges
+            updateContributionBadge('mq6', fusedData.mq6Contribution);
+            updateContributionBadge('mq2', fusedData.mq2Contribution);
+            
+            // Update Smart Detection icon based on gas type
+            updateSmartDetectionIcon(fusedData.gasType, fusedData.riskLevel);
+        }
+        
+        // Update Smart Detection icon dynamically
+        function updateSmartDetectionIcon(gasType, riskLevel) {
+            const iconEl = document.getElementById('smart-detection-icon');
+            
+            if (gasType === 'Clean Air') {
+                // Wind/Air icon for Clean Air
+                iconEl.innerHTML = '<path d="M8 12H14M5 9H16.5C17.8807 9 19 7.88071 19 6.5C19 5.11929 17.8807 4 16.5 4M4 15H17C18.1046 15 19 15.8954 19 17C19 18.1046 18.1046 19 17 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';
+                iconEl.setAttribute('viewBox', '0 0 24 24');
+                iconEl.setAttribute('fill', 'none');
+            } else if (gasType.includes('Smoke') || gasType.includes('Fire')) {
+                // Fire icon for Smoke/Fire
+                iconEl.innerHTML = '<path d="M12,21c3.9,0,7-2,7-7S14,9,14,3c-3,2-4.37,4.1-5,8A5,5,0,0,1,7,8c-1,1-2,4-2,6C5,17.14,6.28,21,12,21Z" style="fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px"></path>';
+                iconEl.setAttribute('viewBox', '0 0 24 24');
+                iconEl.setAttribute('fill', 'none');
+            } else {
+                // Flask icon for Critical/Other gases
+                iconEl.innerHTML = '<path d="M302.09,89.027V7.5c0-4.142-3.358-7.5-7.5-7.5H175.41c-4.142,0-7.5,3.358-7.5,7.5v81.527 c-49.121,3.837-87.916,45.033-87.916,95.122v187.057c0,35.422,26.896,64.671,61.337,68.421V462.5c0,4.142,3.358,7.5,7.5,7.5 h172.338c4.142,0,7.5-3.358,7.5-7.5v-22.873c34.441-3.75,61.337-32.999,61.337-68.421V184.149 C390.006,134.061,351.21,92.865,302.09,89.027z M287.09,15v73.733H242.5V71.669c7.993-3.038,13.698-10.757,13.698-19.802 c0-11.689-9.509-21.198-21.198-21.198s-21.198,9.509-21.198,21.198c0,9.045,5.705,16.764,13.698,19.802v17.065h-44.59V15H287.09z M235,58.064c-3.417,0-6.198-2.78-6.198-6.198c0-3.418,2.781-6.198,6.198-6.198s6.198,2.78,6.198,6.198 C241.198,55.284,238.417,58.064,235,58.064z M175.41,103.733h119.18c41.812,0,76.258,32.079,80.054,72.916h-227.15 c-4.142,0-7.5,3.358-7.5,7.5s3.358,7.5,7.5,7.5h227.512v172.057H94.994V191.649h22.5c4.142,0,7.5-3.358,7.5-7.5s-3.358-7.5-7.5-7.5 H95.356C99.152,135.813,133.598,103.733,175.41,103.733z M156.331,455v-14.957h157.338V455H156.331z M321.169,425.043H148.831 c-27.14,0-49.641-20.19-53.303-46.337h278.944C370.81,404.853,348.309,425.043,321.169,425.043z"/><path d="M235,348.707c16.108,0,30.181-5.601,40.696-16.198c10.881-10.966,17.05-26.568,16.925-42.806 c-0.233-30.101-21.573-57.001-22.481-58.132c-1.475-1.834-3.722-2.866-6.077-2.799c-2.353,0.072-4.535,1.245-5.894,3.167 c0,0-0.605,0.856-1.51,2.135c-3.672-8.004-9.11-17.765-16.277-25.149c-1.412-1.455-3.354-2.276-5.381-2.276 s-3.969,0.821-5.381,2.276c-7.167,7.384-12.605,17.145-16.277,25.149c-0.904-1.279-1.51-2.135-1.51-2.135 c-1.358-1.922-3.541-3.095-5.894-3.167c-2.344-0.082-4.603,0.964-6.077,2.799c-0.908,1.13-22.248,28.031-22.481,58.132 c-0.125,16.238,6.043,31.84,16.925,42.806C204.819,343.105,218.892,348.707,235,348.707z"/>';
+                iconEl.setAttribute('viewBox', '0 0 470 470');
+                iconEl.setAttribute('fill', 'currentColor');
+            }
+        }
+
+        function updateRiskBadge(riskLevel) {
+            const badge = document.getElementById('risk-badge');
+            badge.textContent = riskLevel;
+            
+            // Update colors based on risk level
+            switch(riskLevel) {
+                case 'HIGH':
+                    badge.className = 'badge badge-error badge-sm mt-1';
+                    break;
+                case 'MEDIUM':
+                    badge.className = 'badge badge-warning badge-sm mt-1';
+                    break;
+                case 'LOW':
+                    badge.className = 'badge badge-info badge-sm mt-1';
+                    break;
+                case 'MINIMAL':
+                default:
+                    badge.className = 'badge badge-success badge-sm mt-1';
+                    break;
+            }
+        }
+
+        function updateContributionBadge(sensorId, contribution) {
+            const badge = document.getElementById(`${sensorId}-badge`);
+            
+            // Update text and colors based on contribution level
+            switch(contribution) {
+                case 'HIGH':
+                    badge.textContent = 'HIGH';
+                    badge.className = 'badge badge-error badge-sm mt-1';
+                    break;
+                case 'MEDIUM':
+                    badge.textContent = 'MEDIUM';
+                    badge.className = 'badge badge-warning badge-sm mt-1';
+                    break;
+                case 'LOW':
+                    badge.textContent = 'LOW';
+                    badge.className = 'badge badge-info badge-sm mt-1';
+                    break;
+                case 'NONE':
+                default:
+                    badge.textContent = 'NORMAL';
+                    badge.className = 'badge badge-success badge-sm mt-1';
+                    break;
+            }
+        }
+
+        // Update alert level
+        function updateAlertLevel(level) {
+            const alertEl = document.getElementById('alert-level');
+            const iconEl = document.getElementById('alert-icon');
+            const statFigure = iconEl.closest('.stat-figure');
+            
+            alertEl.textContent = level.toUpperCase();
+            
+            // Update icon colors and SVG
+            switch(level) {
+                case 'normal':
+                    statFigure.className = 'stat-figure text-success';
+                    alertEl.className = 'stat-value text-success';
+                    iconEl.innerHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>';
+                    break;
+                case 'low':
+                    statFigure.className = 'stat-figure text-warning';
+                    alertEl.className = 'stat-value text-warning';
+                    iconEl.innerHTML = '<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>';
+                    break;
+                case 'critical':
+                    statFigure.className = 'stat-figure text-error';
+                    alertEl.className = 'stat-value text-error';
+                    iconEl.innerHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>';
+                    break;
+            }
+        }
+
+        // Update GPS data
+        function updateGPS(gpsData) {
+            const statusEl = document.getElementById('gps-status');
+            const coordsEl = document.getElementById('gps-coords');
+            const gpsIcon = document.getElementById('gps-icon');
+            
+            if (gpsData.latitude && gpsData.longitude) {
+                const lat = gpsData.latitude.toFixed(6);
+                const lon = gpsData.longitude.toFixed(6);
+                const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+                
+                statusEl.textContent = 'Located';
+                coordsEl.textContent = `${lat}, ${lon}`;
+                coordsEl.href = googleMapsUrl;
+                coordsEl.className = 'text-xs hover:text-primary hover:underline cursor-pointer transition-colors tooltip';
+                coordsEl.setAttribute('data-tip', 'Click to open in Google Maps');
+                gpsIcon.className = 'stat-figure text-success'; // Green when signal received
+            } else if (gpsData.satellites > 0) {
+                statusEl.textContent = `Acquiring (${gpsData.satellites} sats)`;
+                coordsEl.textContent = 'Getting fix...';
+                coordsEl.href = '#';
+                coordsEl.className = 'text-xs';
+                coordsEl.removeAttribute('data-tip');
+                gpsIcon.className = 'stat-figure text-warning'; // Yellow when acquiring
+            } else if (gpsData.lastKnownLocation && gpsData.lastKnownLocation.latitude) {
+                const lat = gpsData.lastKnownLocation.latitude.toFixed(6);
+                const lon = gpsData.lastKnownLocation.longitude.toFixed(6);
+                const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+                
+                statusEl.textContent = 'Last Known';
+                let coordText = `${lat}, ${lon}`;
+                
+                if (gpsData.locationAge) {
+                    coordText += ` (${gpsData.locationAge})`;
+                }
+                
+                coordsEl.textContent = coordText;
+                coordsEl.href = googleMapsUrl;
+                coordsEl.className = 'text-xs hover:text-primary hover:underline cursor-pointer transition-colors tooltip';
+                coordsEl.setAttribute('data-tip', 'Click to open in Google Maps (Last Known)');
+                gpsIcon.className = 'stat-figure text-warning'; // Yellow for last known
+            } else {
+                statusEl.textContent = 'No signal';
+                coordsEl.textContent = 'Check antenna';
+                coordsEl.href = '#';
+                coordsEl.className = 'text-xs';
+                coordsEl.removeAttribute('data-tip');
+                gpsIcon.className = 'stat-figure text-error'; // Red when no signal
+            }
+        }
+
+        // Update hardware status
+        function updateHardwareStatus(data) {
+            if (data.hardwareStatus && data.hardwareStatus.components) {
+                const components = data.hardwareStatus.components;
+                
+                // Update MCP3008 status
+                updateComponentStatus('mcp3008-status', components.mcp3008);
+                
+                // Update GPS status
+                updateComponentStatus('gps-hardware-status', components.gps);
+                
+                // Update LED status
+                updateComponentStatus('led-status', components.leds);
+                
+                // Update Buzzer status
+                updateComponentStatus('buzzer-status', components.buzzer);
+            }
+        }
+
+        // Production ready - no development mode checks needed
+
+         function updateComponentStatus(elementId, component) {
+             const statusEl = document.getElementById(elementId);
+             if (!statusEl) return;
+             
+             if (!component) {
+                 statusEl.className = 'badge badge-error gap-2';
+                 statusEl.textContent = 'Not initialized';
+                 return;
+             }
+             if (component.ready === true || component.status === 'ready') {
+                 statusEl.className = 'badge badge-success gap-2';
+                 statusEl.textContent = 'Ready';
+             } else if (component.ready === false || component.status === 'error') {
+                 statusEl.className = 'badge badge-error gap-2';
+                 statusEl.textContent = component.error || 'Error';
+             } else if (component.status && component.status !== 'Initializing...') {
+                 statusEl.className = 'badge badge-warning gap-2';
+                 statusEl.textContent = component.status;
+             } else {
+                 // Still initializing
+                 statusEl.className = 'badge badge-warning gap-2';
+                 statusEl.textContent = 'Initializing...';
+             }
+
+             // Special handling for buzzer
+             if (elementId === 'buzzer-status' && component) {
+                 updateBuzzerDetails(component);
+             }
+         }
+
+         function updateBuzzerDetails(component) {
+             const detailsEl = document.getElementById('buzzer-details');
+             const patternEl = document.getElementById('buzzer-pattern');
+             const holdTimeEl = document.getElementById('buzzer-hold-time');
+             
+             if (!detailsEl || !component) return;
+
+             if (component.currentPattern) {
+                 detailsEl.classList.remove('hidden');
+                 patternEl.textContent = `Pattern: ${component.currentPattern}`;
+                 
+                 if (component.isHolding && component.holdTimeRemaining > 0) {
+                     holdTimeEl.textContent = `Hold: ${component.holdTimeRemaining.toFixed(1)}s remaining`;
+                     holdTimeEl.className = 'text-yellow-400';
+                 } else if (component.alertDuration > 0) {
+                     holdTimeEl.textContent = `Active: ${component.alertDuration.toFixed(1)}s`;
+                     holdTimeEl.className = 'text-red-400';
+                 } else {
+                     holdTimeEl.textContent = '';
+                 }
+             } else {
+                 detailsEl.classList.add('hidden');
+             }
+         }
+
+        // Activity log entry
+        function addActivityLog(message, type = 'info') {
+            const logEl = document.getElementById('activity-log');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let iconColor = 'text-info';
+            let hrColor = 'bg-info';
+            let typeLabel = 'Info';
+            let icon = '<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>';
+            
+            switch(type) {
+                case 'success':
+                    iconColor = 'text-success';
+                    hrColor = 'bg-success';
+                    typeLabel = 'Success';
+                    icon = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>';
+                    break;
+                case 'error':
+                    iconColor = 'text-error';
+                    hrColor = 'bg-error';
+                    typeLabel = 'Error';
+                    icon = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>';
+                    break;
+                case 'warning':
+                    iconColor = 'text-warning';
+                    hrColor = 'bg-warning';
+                    typeLabel = 'Warning';
+                    icon = '<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>';
+                    break;
+            }
+            
+            const logEntry = document.createElement('li');
+            logEntry.innerHTML = `
+                <div class="timeline-start text-xs opacity-70">${timestamp}</div>
+                <div class="timeline-middle">
+                    <svg class="w-5 h-5 ${iconColor}" fill="currentColor" viewBox="0 0 20 20">${icon}</svg>
+                </div>
+                <div class="timeline-end timeline-box">
+                    <div class="font-semibold ${iconColor}">${typeLabel}</div>
+                    <div class="text-sm">${message}</div>
+                </div>
+                <hr class="${hrColor}"/>
+            `;
+            
+            logEl.insertBefore(logEntry, logEl.firstChild);
+            
+            // Keep only last 15 entries
+            while (logEl.children.length > 15) {
+                logEl.removeChild(logEl.lastChild);
+            }
+        }
+
+        // Update current time
+        function updateTime() {
+            document.getElementById('current-time').textContent = new Date().toLocaleString();
+        }
+
+        // Update time every second
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Load Recent Activity from API
+        async function loadRecentActivity() {
+            try {
+                console.log('[DEBUG] Loading recent activity...');
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.warn('[DEBUG] No token found for recent activity');
+                    addActivityLog('Please log in to view recent alerts', 'info');
+                    return;
+                }
+
+                // Get alerts from last 15 minutes
+                const response = await fetch('/api/alerts/active', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                console.log('[DEBUG] Alerts response status:', response.status);
+                if (!response.ok) {
+                    let errorText;
+                    try {
+                        errorText = await response.text();
+                    } catch (e) {
+                        errorText = `HTTP ${response.status} ${response.statusText}`;
+                    }
+                    console.error('[ERROR] Failed to load alerts:', errorText);
+                    throw new Error(`Failed to load alerts: ${response.status}`);
+                }
+
+                let data;
+                try {
+                    data = await response.json();
+                    console.log('[DEBUG] Alerts data received:', data);
+                } catch (jsonError) {
+                    console.error('[ERROR] Failed to parse alerts JSON:', jsonError);
+                    const textResponse = await response.text();
+                    console.error('[ERROR] Raw response:', textResponse);
+                    throw new Error('Invalid response format from server');
+                }
+                
+                const logEl = document.getElementById('activity-log');
+                logEl.innerHTML = ''; // Clear existing
+
+                if (!data.alerts || data.alerts.length === 0) {
+                    console.log('[DEBUG] No alerts in response');
+                    logEl.innerHTML = `
+                        <li>
+                            <div class="timeline-start text-xs opacity-70">Now</div>
+                            <div class="timeline-middle">
+                                <svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div class="timeline-end timeline-box">
+                                <div class="font-semibold text-success">System</div>
+                                <div class="text-sm">No gas leaks detected. All systems normal.</div>
+                            </div>
+                            <hr class="bg-success"/>
+                        </li>
+                    `;
+                    return;
+                }
+
+                // Filter to last 30 minutes and show most recent first
+                const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+                console.log('[DEBUG] Current time:', new Date());
+                console.log('[DEBUG] 30 minutes ago:', thirtyMinutesAgo);
+                console.log('[DEBUG] Total alerts before filter:', data.alerts.length);
+                
+                const recentAlerts = data.alerts
+                    .filter(alert => {
+                        const alertTime = parseSQLiteTimestamp(alert.created_at);
+                        const isRecent = alertTime > thirtyMinutesAgo;
+                        if (!isRecent) {
+                            console.log('[DEBUG] Filtering out alert:', alert.created_at, '(older than 30 minutes)');
+                        }
+                        return isRecent;
+                    })
+                    .sort((a, b) => parseSQLiteTimestamp(b.created_at) - parseSQLiteTimestamp(a.created_at))
+                    .slice(0, 15);
+
+                console.log('[DEBUG] Recent detections after filter:', recentAlerts.length);
+                
+                if (recentAlerts.length === 0) {
+                    console.log('[DEBUG] No recent detections in last 30 minutes');
+                    logEl.innerHTML = `
+                        <li>
+                            <div class="timeline-start text-xs opacity-70">Now</div>
+                            <div class="timeline-middle">
+                                <svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div class="timeline-end timeline-box">
+                                <div class="font-semibold text-success">System</div>
+                                <div class="text-sm">No gas detections in last 30 minutes</div>
+                            </div>
+                            <hr class="bg-success"/>
+                        </li>
+                    `;
+                    return;
+                }
+
+                // Display each alert
+                recentAlerts.forEach((alert, index) => {
+                    const alertTime = parseSQLiteTimestamp(alert.created_at);
+                    const timeAgo = getTimeAgo(alertTime);
+                    
+                    let iconColor, hrColor, typeLabel, icon, message;
+                    
+                    if (alert.alert_type === 'critical') {
+                        iconColor = 'text-error';
+                        hrColor = 'bg-error';
+                        typeLabel = 'CRITICAL ALERT';
+                        icon = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>';
+                        message = `${alert.gas_type || 'Gas'} detected! MQ6: ${alert.mq6_ppm || 'N/A'} ppm, MQ2: ${alert.mq2_ppm || 'N/A'} ppm`;
+                    } else if (alert.alert_type === 'low') {
+                        iconColor = 'text-warning';
+                        hrColor = 'bg-warning';
+                        typeLabel = 'LOW LEVEL ALERT';
+                        icon = '<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>';
+                        message = `${alert.gas_type || 'Gas'} level elevated. MQ6: ${alert.mq6_ppm || 'N/A'} ppm, MQ2: ${alert.mq2_ppm || 'N/A'} ppm`;
+                    }
+
+                    // Add SMS status
+                    if (alert.sms_sent) {
+                        let recipients = [];
+                        if (alert.sms_recipients) {
+                            if (typeof alert.sms_recipients === 'string') {
+                                try {
+                                    recipients = JSON.parse(alert.sms_recipients);
+                                } catch (e) {
+                                    console.error('[ERROR] Failed to parse sms_recipients:', e);
+                                    recipients = [];
+                                }
+                            } else if (Array.isArray(alert.sms_recipients)) {
+                                recipients = alert.sms_recipients;
+                            }
+                        }
+                        message += ` | SMS sent to ${recipients.length} contact(s)`;
+                    } else {
+                        message += ` | SMS pending`;
+                    }
+
+                    const logEntry = document.createElement('li');
+                    logEntry.innerHTML = `
+                        <div class="timeline-start text-xs opacity-70">${timeAgo}</div>
+                        <div class="timeline-middle">
+                            <svg class="w-5 h-5 ${iconColor}" fill="currentColor" viewBox="0 0 20 20">${icon}</svg>
+                        </div>
+                        <div class="timeline-end timeline-box cursor-pointer hover:bg-base-200" onclick="showAlertDetails(${alert.id})">
+                            <div class="font-semibold ${iconColor}">${typeLabel}</div>
+                            <div class="text-sm">${message}</div>
+                        </div>
+                        ${index < recentAlerts.length - 1 ? `<hr class="${hrColor}"/>` : ''}
+                    `;
+                    logEl.appendChild(logEntry);
+                });
+
+            } catch (error) {
+                console.error('Failed to load recent activity:', error);
+                addActivityLog('Failed to load alerts. Will retry...', 'error');
+            }
+        }
+
+        // Parse SQLite timestamp
+        function parseSQLiteTimestamp(timestamp) {
+            if (!timestamp) return new Date();
+            return new Date(timestamp.replace(' ', 'T'));
+        }
+
+        // Time ago helper
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return 'Just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            return date.toLocaleDateString();
+        }
+
+        // Show alert details modal
+        async function showAlertDetails(alertId) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/alerts/${alertId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load alert details');
+                
+                const data = await response.json();
+                const alert = data.alert;
+                
+                // Show in modal (will create this modal next)
+                const modal = document.getElementById('alert-details-modal');
+                if (modal) {
+                    document.getElementById('modal-alert-type').textContent = alert.alert_type.toUpperCase();
+                    document.getElementById('modal-gas-type').textContent = alert.gas_type || 'N/A';
+                    document.getElementById('modal-mq6').textContent = alert.mq6_ppm || 'N/A';
+                    document.getElementById('modal-mq2').textContent = alert.mq2_ppm || 'N/A';
+                    document.getElementById('modal-timestamp').textContent = parseSQLiteTimestamp(alert.created_at).toLocaleString();
+                    document.getElementById('modal-location').textContent = 
+                        alert.gps_latitude && alert.gps_longitude 
+                            ? `${alert.gps_latitude}, ${alert.gps_longitude}` 
+                            : 'N/A';
+                    
+                    const recipients = alert.sms_recipients ? JSON.parse(alert.sms_recipients) : [];
+                    document.getElementById('modal-sms-status').textContent = alert.sms_sent ? 'Sent' : 'Pending';
+                    document.getElementById('modal-recipients').innerHTML = recipients.length > 0
+                        ? recipients.map(r => `<li>${r.name} (${r.phone})</li>`).join('')
+                        : '<li>No recipients</li>';
+                    
+                    modal.showModal();
+                }
+            } catch (error) {
+                console.error('Failed to load alert details:', error);
+                showToast('Failed to load alert details', 'error');
+            }
+        }
+
+        // Initial load and auto-refresh every 30 seconds (load immediately, no delay)
+        loadRecentActivity();
+        setInterval(loadRecentActivity, 30000);
+
+        // Real-time alert updates via WebSocket
+        socket.on('alert-level-change', (data) => {
+            if (data.level) {
+                lastKnownAlertLevel = data.level;
+                updateAlertLevel(data.level);
+            }
+            loadRecentActivity();
+        });
+
+        socket.on('critical-alert', (data) => {
+            lastKnownAlertLevel = 'critical';
+            updateAlertLevel('critical');
+            loadRecentActivity();
+        });
+
+        // Login/Logout functionality
+        let currentUser = null;
+        
+        const checkNavJS = setInterval(() => {
+            if (window.updateUIForLoggedInUser) {
+                clearInterval(checkNavJS);
+                const originalNavUpdate = window.updateUIForLoggedInUser;
+                window.updateUIForLoggedInUser = function(user) {
+                    currentUser = user;
+                    originalNavUpdate(user);
+                    // Add activity log when user logs in
+                    if (typeof addActivityLog === 'function') {
+                        addActivityLog(`Logged in as ${user.role}: ${user.username}`, 'success');
+                    }
+                };
+            }
+        }, 50);
+
+        // Check for existing session on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = window.getToken();
+            const user = window.getUser();
+
+            if (token && user) {
+                currentUser = user;
+                setTimeout(() => {
+                    if (typeof addActivityLog === 'function' && currentUser) {
+                        addActivityLog(`Welcome back, ${currentUser.username}`, 'success');
+                    }
+                }, 200);
+            }
+        });
+    </script>
+
+    <!-- Shared Components -->
+    <script src="assets/js/modals.js"></script>
+    <script src="assets/js/nav.js"></script>
+    <script src="assets/js/dataRetentionWarning.js"></script>
+
+        </div>
+        <!-- End of drawer-content -->
+
+        <!-- Drawer Side -->
+        <div class="drawer-side z-10">
+            <label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+            <aside class="bg-base-200 min-h-screen w-80 p-4">
+                <!-- Sidebar Header -->
+                <div class="flex items-center gap-3 px-4 py-6 border-b border-base-300">
+                    <div class="avatar">
+                        <div class="w-12 rounded-lg">
+                            <img src="assets/images/gasguard.png" alt="GasGuard Logo" />
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">GasGuard</h2>
+                        <p class="text-xs text-base-content/70">IoT Gas Leak Detection System</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Menu -->
+                <ul class="menu p-0 mt-4 text-base">
+                    <li>
+                        <a href="/" class="active py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M1 2.25C1 1.56 1.56 1 2.25 1h3.5C6.44 1 7 1.56 7 2.25v11.5C7 14.44 6.44 15 5.75 15h-3.5C1.56 15 1 14.44 1 13.75V2.25zm1.5.25v11h3v-11h-3zM9 2.25C9 1.56 9.56 1 10.25 1h3.5c.69 0 1.25.56 1.25 1.25v3.5C15 6.44 14.44 7 13.75 7h-3.5C9.56 7 9 6.44 9 5.75v-3.5zm1.5.25v3h3v-3h-3zM10.25 9C9.56 9 9 9.56 9 10.25v3.5c0 .69.56 1.25 1.25 1.25h3.5c.69 0 1.25-.56 1.25-1.25v-3.5C15 9.56 14.44 9 13.75 9h-3.5zm.25 4.5v-3h3v3h-3z"/>
+                            </svg>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="user-only hidden">
+                        <a href="/settings.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                            </svg>
+                            Settings
+                        </a>
+                    </li>
+                    <li class="user-only hidden">
+                        <a href="/contacts.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 15 15">
+                                <path d="M2 12.5V13H3V12.5H2ZM7 12.5V13H8V12.5H7ZM3 12.5V11.9999H2V12.5H3ZM7 11.9997V12.5H8V11.9997H7ZM5 10C6.10466 10 7 10.8952 7 11.9997H8C8 10.3427 6.65677 9 5 9V10ZM3 11.9999C3 10.8953 3.8954 10 5 10V9C3.34318 9 2 10.343 2 11.9999H3ZM5 4C3.89543 4 3 4.89543 3 6H4C4 5.44772 4.44772 5 5 5V4ZM7 6C7 4.89543 6.10457 4 5 4V5C5.55228 5 6 5.44772 6 6H7ZM5 8C6.10457 8 7 7.10457 7 6H6C6 6.55228 5.55228 7 5 7V8ZM5 7C4.44772 7 4 6.55228 4 6H3C3 7.10457 3.89543 8 5 8V7ZM1.5 3H13.5V2H1.5V3ZM14 3.5V11.5H15V3.5H14ZM13.5 12H1.5V13H13.5V12ZM1 11.5V3.5H0V11.5H1ZM1.5 12C1.22386 12 1 11.7761 1 11.5H0C0 12.3284 0.671574 13 1.5 13V12ZM14 11.5C14 11.7761 13.7761 12 13.5 12V13C14.3284 13 15 12.3284 15 11.5H14ZM13.5 3C13.7761 3 14 3.22386 14 3.5H15C15 2.67157 14.3284 2 13.5 2V3ZM1.5 2C0.671573 2 0 2.67157 0 3.5H1C1 3.22386 1.22386 3 1.5 3V2ZM9 6H12V5H9V6ZM9 9H12V8H9V9ZM0 15H15V14H0V15ZM3 0V2.5H4V0H3ZM11 0V2.5H12V0H11Z"/>
+                            </svg>
+                            Alert Contacts
+                        </a>
+                    </li>
+                    <li class="user-only hidden">
+                        <a href="/history.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12,24C5.4,24,0,18.6,0,12h2c0,5.5,4.5,10,10,10s10-4.5,10-10S17.5,2,12,2C8.4,2,5.1,3.9,3.3,7H8v2H0V1h2v4.4 C4.2,2.1,8,0,12,0c6.6,0,12,5.4,12,12S18.6,24,12,24z M15.3,17.8L11,13.4V6h2v6.6l3.7,3.8L15.3,17.8z"/>
+                            </svg>
+                            History & Statistics
+                        </a>
+                    </li>
+                    <li class="admin-only hidden">
+                        <a href="/admin/calibration.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6 8v11h12V8h-3V2h2v4h5v2h-2v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8H2V6h5V2h2v6H6zm7-6v6h-2V2h2z"/>
+                            </svg>
+                            Sensor Calibration
+                        </a>
+                    </li>
+                    <li class="admin-only hidden">
+                        <a href="/admin/system-logs.html" class="py-4 px-6 text-base">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 48 48">
+                                <path d="M24 43.9998H8V3.99977H40V23.9998" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <path d="M35.5 43.9998V30.9998" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <path d="M31 34.4998L32.5 32.9998L35.5 29.9998L38.5 32.9998L40 34.4998" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                <path d="M16 15.9998H32" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+                                <path d="M16 23.9998H24" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+                            </svg>
+                            System Logs
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Sidebar Footer -->
+                <div class="absolute bottom-4 left-4 right-4">
+                    <div class="divider"></div>
+                    <div class="text-xs text-center text-base-content/50">
+                        <p>GasGuard v1.0.0</p>
+                        <p class="mt-1">IoT Gas Leak Detection System</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+        <!-- End of drawer-side -->
+    </div>
+    <!-- End of drawer -->
+`</body>
+
+</html>
