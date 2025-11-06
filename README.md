@@ -23,7 +23,6 @@ A capstone project implementing a complete IoT safety system for detecting LPG a
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [License](#license)
-- [Contact](#contact)
 
 ---
 
